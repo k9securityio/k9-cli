@@ -21,6 +21,10 @@ build:
 		go build \
 		-ldflags "-X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-linux64
+	@GOOS=windows GOARCH=amd64 CGO_ENABLED=0\
+		go build \
+		-ldflags "-X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
+		-o ./bin/k9-windows64.exe
 
 package:
 	@docker build -t k9securityio/k9:$(VERSION) -t k9securityio/k9:$(REV) -t k9securityio/k9:b$(BUILD_NUMBER) .

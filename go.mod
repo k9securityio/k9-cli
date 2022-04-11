@@ -1,4 +1,4 @@
-module github.com/k9securityio/k9cli
+module github.com/k9securityio/k9-cli
 
 go 1.18
 

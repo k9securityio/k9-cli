@@ -17,19 +17,19 @@ lint:
 build:
 	@GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
 		go build \
-		-ldflags "-s -w -X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
+		-ldflags "-s -w -X 'github.com/k9securityio/k9-cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9-cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9-cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-darwinM1
 	@GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 \
 		go build \
-		-ldflags "-s -w -X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
+		-ldflags "-s -w -X 'github.com/k9securityio/k9-cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9-cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9-cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-darwin64
 	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0\
 		go build \
-		-ldflags "-s -w -X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
+		-ldflags "-s -w -X 'github.com/k9securityio/k9-cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9-cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9-cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-linux64
 	@GOOS=windows GOARCH=amd64 CGO_ENABLED=0\
 		go build \
-		-ldflags "-X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
+		-ldflags "-X 'github.com/k9securityio/k9-cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9-cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9-cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-windows64.exe
 
 package:

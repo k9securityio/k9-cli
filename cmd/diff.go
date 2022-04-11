@@ -28,12 +28,12 @@ import (
 var diffCmd = &cobra.Command{
 	Use:   "diff",
 	Short: `Calculate the difference between a snapshot and last scan`,
-	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("diff called")
 	},
 }
 
+// init defines and wires flags
 func init() {
 	rootCmd.AddCommand(diffCmd)
 	diffCmd.Flags().String(`format`, `csv`, `Output format: [csv]`)

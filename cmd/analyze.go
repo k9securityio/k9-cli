@@ -27,13 +27,12 @@ import (
 var analyzeCmd = &cobra.Command{
 	Use:   `analyze`,
 	Short: `Start analysis on current configuration`,
-	Long:  `< need longer description with examples >`,
-
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Please specify a target to analyze")
 	},
 }
 
+// init defines and wires flags
 func init() {
 	rootCmd.AddCommand(analyzeCmd)
 }

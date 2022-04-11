@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/k9securityio/k9cli/cmd"
+import "github.com/k9securityio/k9-cli/cmd"
 
 func main() {
 	cmd.Execute()

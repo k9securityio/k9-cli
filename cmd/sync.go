@@ -27,12 +27,12 @@ import (
 var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "Sync your local database with a report delivered to your AWS account.",
-	Long:  `< need longer description with examples >`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("sync called")
 	},
 }
 
+// init defines and wires flags
 func init() {
 	rootCmd.AddCommand(syncCmd)
 }

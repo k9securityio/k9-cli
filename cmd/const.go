@@ -6,5 +6,6 @@ var revision string
 var buildtime string
 
 const (
+	// EnvPrefix defines the prefix that this program uses to distinguish its environment variables.
 	EnvPrefix = `K9`
 )

@@ -13,10 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// Package cmd contains all cobra commands
 package cmd
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/spf13/cobra"
 )
@@ -26,7 +29,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display version information for k9cli",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("version: %v\nrevision: %v\nbuild time: %v\n", version, revision, buildtime)
+		fmt.Printf("version: %v\nrevision: %v\nbuild time: %v\nos/arch: %v/%v\n", version, revision, buildtime, runtime.GOOS, runtime.GOARCH)
 	},
 }
 

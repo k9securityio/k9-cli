@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// Package cmd contains all cobra commands
 package cmd
 
 import (
@@ -23,9 +25,9 @@ import (
 
 // queryRisksPrivilegeEscalationCmd represents the risks command
 var queryRisksPrivilegeEscalationCmd = &cobra.Command{
-	Use:   "privilege-escalation",
+	Use:     "privilege-escalation",
 	Aliases: []string{`iam-admins`},
-	Short: "Show privilege escalation risks",
+	Short:   "Show privilege escalation risks",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("risks privilege-escalation called")
 	},

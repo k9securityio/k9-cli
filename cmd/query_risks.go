@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// Package cmd contains all cobra commands
 package cmd
 
 import (
@@ -35,6 +37,5 @@ func init() {
 
 	queryRisksCmd.PersistentFlags().String(`format`, `json`, `Output format as one of: [ json | csv | tap | pdf ]`)
 	queryRisksCmd.PersistentFlags().String(`analysis-date`, ``, `Use snapshot from the specified date (default: current)`)
-
 
 }

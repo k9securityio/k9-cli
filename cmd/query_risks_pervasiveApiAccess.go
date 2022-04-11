@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// Package cmd contains all cobra commands
 package cmd
 
 import (
@@ -21,8 +23,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// queryRisksPervasiveApiAccessCmd represents the risks command
-var queryRisksPervasiveApiAccessCmd = &cobra.Command{
+// queryRisksPervasiveAPIAccessCmd represents the risks command
+var queryRisksPervasiveAPIAccessCmd = &cobra.Command{
 	Use:   "pervasive-api-access",
 	Short: "Show pervasive API access risks",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -31,7 +33,7 @@ var queryRisksPervasiveApiAccessCmd = &cobra.Command{
 }
 
 func init() {
-	queryRisksCmd.AddCommand(queryRisksPervasiveApiAccessCmd)
-	queryRisksPervasiveApiAccessCmd.Flags().StringArray(`service`, []string{}, "A list of service names to evaluate")
-	queryRisksPervasiveApiAccessCmd.MarkFlagRequired(`service`)
+	queryRisksCmd.AddCommand(queryRisksPervasiveAPIAccessCmd)
+	queryRisksPervasiveAPIAccessCmd.Flags().StringArray(`service`, []string{}, "A list of service names to evaluate")
+	queryRisksPervasiveAPIAccessCmd.MarkFlagRequired(`service`)
 }

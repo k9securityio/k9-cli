@@ -9,7 +9,7 @@ lint:
 		-D errcheck -D deadcode -D varcheck -D unused \
 		-E gosec -E dupl -E goconst -E misspell -E lll -E unparam -E gochecknoinits
 build:
-	@GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 \
+	@GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
 		go build \
 		-ldflags "-X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-darwinM1

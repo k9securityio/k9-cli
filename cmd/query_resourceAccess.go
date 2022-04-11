@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // queryResourceAccessCmd represents the resource-access command
@@ -36,5 +37,6 @@ func init() {
 	queryCmd.AddCommand(queryResourceAccessCmd)
 
 	queryResourceAccessCmd.Flags().String("format", `json`, `Output format [csv|json] (default: json)`)
+	viper.BindPFlag(`query_format`, queryResourceAccessCmd.Flags().Lookup(`format`))
 	queryResourceAccessCmd.Flags().StringArray("resource", []string{}, `A list of resource ARNs to include`)
 }

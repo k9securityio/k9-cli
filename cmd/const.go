@@ -4,3 +4,7 @@ package cmd
 var version string
 var revision string
 var buildtime string
+
+const (
+	EnvPrefix = `K9`
+)

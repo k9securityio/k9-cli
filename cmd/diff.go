@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // diffCmd represents the diff command
@@ -36,4 +37,5 @@ var diffCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(diffCmd)
 	diffCmd.Flags().String(`format`, `csv`, `Output format: [csv]`)
+	viper.BindPFlag(`diff_format`, diffCmd.Flags().Lookup(`format`))
 }

@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // queryRisksCmd represents the risks command
@@ -28,7 +29,7 @@ var queryRisksCmd = &cobra.Command{
 	Use:   "risks",
 	Short: "Lookup various risks discovered in an analysis",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("risks called")
+		fmt.Printf("risks called, output format: %v\n", cmd.Flags().Lookup(`format`).Value)
 	},
 }
 
@@ -36,6 +37,7 @@ func init() {
 	queryCmd.AddCommand(queryRisksCmd)
 
 	queryRisksCmd.PersistentFlags().String(`format`, `json`, `Output format as one of: [ json | csv | tap | pdf ]`)
+	viper.BindPFlag(`query_format`, queryRisksCmd.Flags().Lookup(`format`))
 	queryRisksCmd.PersistentFlags().String(`analysis-date`, ``, `Use snapshot from the specified date (default: current)`)
 
 }

@@ -35,9 +35,4 @@ var queryCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(queryCmd)
-
-	// Here you will define your flags and configuration settings.
-	//queryCmd.PersistentFlags().String(`format`, `json`, `[ json | csv | tap | pdf ]`)
-	//viper.BindPFlag(`format`, queryCmd.PersistentFlags().Lookup(`format`))
-
 }

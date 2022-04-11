@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // registerCmd represents the register command
@@ -41,8 +42,10 @@ func init() {
 	registerCmd.Flags().String("customer-name", ``,
 		"A full name for the registering customer (required)")
 	registerCmd.MarkFlagRequired(`customer-name`)
+	viper.BindPFlag(`customer_name`, registerCmd.Flags().Lookup(`customer-name`))
 
 	registerCmd.Flags().String("technical-contact-email", ``,
 		"A valid email address for the customer's technical contact (required)")
 	registerCmd.MarkFlagRequired(`technical-contact-email`)
+	viper.BindPFlag(`technical_contact_email`, registerCmd.Flags().Lookup(`technical-contact-email`))
 }

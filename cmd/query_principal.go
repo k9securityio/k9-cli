@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // queryPrincipalCmd represents the principal command
@@ -36,5 +37,7 @@ func init() {
 	queryCmd.AddCommand(queryPrincipalCmd)
 
 	queryPrincipalCmd.Flags().String("format", `json`, `Output format [csv|json] (default: json)`)
+	viper.BindPFlag(`query_format`, queryPrincipalCmd.Flags().Lookup(`format`))
+
 	queryPrincipalCmd.Flags().StringArray("principal", []string{}, `A list of principals to include`)
 }

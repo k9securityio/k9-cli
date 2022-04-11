@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // analyzeAccountCmd represents the account command
@@ -37,4 +38,5 @@ func init() {
 	analyzeCmd.AddCommand(analyzeAccountCmd)
 	analyzeAccountCmd.Flags().String(`account`, ``, "The AWS account number for analysis (required)")
 	analyzeAccountCmd.MarkFlagRequired(`account`)
+	viper.BindPFlag(`account`, analyzeAccountCmd.Flags().Lookup(`account`))
 }

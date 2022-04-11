@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // analyzePrincipalCmd represents the principal command
@@ -38,5 +39,7 @@ func init() {
 
 	analyzePrincipalCmd.Flags().String(`account`, ``, "The AWS account number for analysis (required)")
 	analyzePrincipalCmd.MarkFlagRequired(`account`)
+	viper.BindPFlag(`account`, analyzePrincipalCmd.Flags().Lookup(`account`))
+
 	analyzePrincipalCmd.Flags().StringArray(`service`, []string{}, "A list of service names to evaluate")
 }

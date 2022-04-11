@@ -4,6 +4,12 @@ BUILD_NUMBER := "${BUILD_NUMBER}"
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%S%z")
 PWD := $(shell pwd)
 
+setup:
+	# Add installation of developer tools here
+	# * golangci-lint
+	# * upx
+	# * goimports
+
 lint:
 	@golangci-lint run \
 		-D errcheck -D deadcode -D varcheck -D unused \
@@ -11,15 +17,15 @@ lint:
 build:
 	@GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
 		go build \
-		-ldflags "-X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
+		-ldflags "-s -w -X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-darwinM1
 	@GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 \
 		go build \
-		-ldflags "-X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
+		-ldflags "-s -w -X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-darwin64
 	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0\
 		go build \
-		-ldflags "-X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
+		-ldflags "-s -w -X 'github.com/k9securityio/k9cli/cmd.version=$(VERSION)' -X 'github.com/k9securityio/k9cli/cmd.revision=$(REV)' -X 'github.com/k9securityio/k9cli/cmd.buildtime=$(BUILD_TIME)'" \
 		-o ./bin/k9-linux64
 	@GOOS=windows GOARCH=amd64 CGO_ENABLED=0\
 		go build \

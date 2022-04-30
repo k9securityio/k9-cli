@@ -45,8 +45,10 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Override the configuration file location
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k9-cli.yaml)")
+	rootCmd.PersistentFlags().BoolP(`verbose`, `v`, false, `enable verbose reporting on STDERR`)
+	rootCmd.PersistentFlags().String(`report-home`, `.`, `a directory where a K9 report database has been downloaded`)
+	rootCmd.MarkFlagRequired(`report-home`)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -61,6 +63,7 @@ func initConfig() {
 
 		// Search config in home directory with name ".k9-cli" (without extension).
 		viper.AddConfigPath(home)
+		viper.AddConfigPath(`.`)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".k9-cli")
 	}

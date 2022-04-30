@@ -36,6 +36,13 @@ var diffCmd = &cobra.Command{
 // init defines and wires flags
 func init() {
 	rootCmd.AddCommand(diffCmd)
-	diffCmd.Flags().String(`format`, `csv`, `Output format: [csv]`)
-	viper.BindPFlag(`diff_format`, diffCmd.Flags().Lookup(`format`))
+	diffCmd.PersistentFlags().String(`format`, `csv`, `Output format: [csv]`)
+	viper.BindPFlag(`diff_format`, diffCmd.PersistentFlags().Lookup(`format`))
+
+	diffCmd.PersistentFlags().String(`analysis-date`, ``, `Use snapshot from the specified date in YYYY-MM-DD (required)`)
+	diffCmd.MarkFlagRequired(`analysis-date`)
+	diffCmd.PersistentFlags().String(`customer_id`, ``, `K9 customer ID for analysis (required)`)
+	diffCmd.MarkFlagRequired(`customer_id`)
+	diffCmd.PersistentFlags().String(`account`, ``, `AWS account ID for analysis (required)`)
+	diffCmd.MarkFlagRequired(`account`)
 }

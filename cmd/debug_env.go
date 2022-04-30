@@ -22,6 +22,8 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/k9securityio/k9-cli/core"
 	"github.com/spf13/cobra"
 )
 
@@ -29,14 +31,34 @@ import (
 var debugEnvCmd = &cobra.Command{
 	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		// fmt.Println("debug-env called")
 		cfg, err := config.LoadDefaultConfig(context.TODO())
 		if err != nil {
 			fmt.Printf("Error retrieving AWS configuration: %+v\n", err)
 		} else {
-			fmt.Printf("AWS Configuration: %+v\n", cfg)
-			fmt.Printf("AWS Credentials: %+v\n", cfg.Credentials)
+			//			fmt.Printf("AWS Configuration: %+v\n", cfg)
+			//			fmt.Printf("AWS Credentials: %+v\n", cfg.Credentials)
 		}
-		fmt.Println("debug-env called")
+
+		bucket, _ := cmd.Flags().GetString(`bucket`)
+		if len(bucket) > 0 {
+			client := s3.NewFromConfig(cfg)
+			s3db, err := core.LoadS3DB(client, bucket)
+			if err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "Unable to load s3 database, %v\n", err)
+			} else {
+				fmt.Fprintln(cmd.OutOrStdout(), `Bucket database summary:`)
+				s3db.Dump(cmd.OutOrStdout(), true)
+			}
+		} else {
+			db, err := core.LoadLocalDB(cmd.Flags().Lookup(`report-home`).Value.String())
+			if err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "Unable to load local database, %v\n", err)
+			} else {
+				fmt.Fprintln(cmd.OutOrStdout(), `Local database summary:`)
+				db.Dump(cmd.OutOrStdout(), true)
+			}
+		}
 	},
 	Use:   "debug-env",
 	Short: "Display debugEnv information about the environment",
@@ -44,4 +66,6 @@ var debugEnvCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(debugEnvCmd)
+	debugEnvCmd.Flags().String(`bucket`, ``, `S3 bucket location of your K9 secure inbox`)
+
 }

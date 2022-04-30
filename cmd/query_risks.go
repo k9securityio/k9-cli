@@ -38,6 +38,11 @@ func init() {
 
 	queryRisksCmd.PersistentFlags().String(`format`, `json`, `Output format as one of: [ json | csv | tap | pdf ]`)
 	viper.BindPFlag(`query_format`, queryRisksCmd.Flags().Lookup(`format`))
-	queryRisksCmd.PersistentFlags().String(`analysis-date`, ``, `Use snapshot from the specified date (default: current)`)
+	queryRisksCmd.PersistentFlags().String(`analysis-date`, ``, `Use snapshot from the specified date in YYYY-MM-DD (required)`)
+	queryRisksCmd.MarkFlagRequired(`analysis-date`)
 
+	queryRisksCmd.PersistentFlags().String(`customer_id`, ``, `K9 customer ID for analysis (required)`)
+	queryRisksCmd.MarkFlagRequired(`customer_id`)
+	queryRisksCmd.PersistentFlags().String(`account`, ``, `AWS account ID for analysis (required)`)
+	queryRisksCmd.MarkFlagRequired(`account`)
 }

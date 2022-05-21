@@ -10,6 +10,9 @@ setup:
 	# * upx
 	# * goimports
 
+test:
+	go test ./...
+
 lint:
 	@golangci-lint run \
 		-D errcheck -D deadcode -D varcheck -D unused \

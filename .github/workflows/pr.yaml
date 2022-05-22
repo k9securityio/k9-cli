@@ -1,12 +1,12 @@
-name: golangci-lint
+name: Pull Request
 on:
+  pull_request:
   push:
     tags:
       - v*
     branches:
       - master
       - main
-  pull_request:
 
 env:
   GO_VERSION: 1.18
@@ -84,5 +84,13 @@ jobs:
        run: make test
      - name: Build
        run: make build 
-     #- name: Package
-     #- name: Store Artifacts / Release
+     - name: Publish
+       uses: actions/upload-artifact@v3
+       if: success()
+       with:
+         name: binaries
+         path: bin/
+         if-no-files-found: error
+         retention-days: 5
+
+

@@ -1,4 +1,4 @@
-VERSION := $(shell git describe --abbrev=0 --tags)
+VERSION := $(if $(GITHUB_SHA),$(GITHUB_SHA),$(shell git describe --abbrev=0 --tags))
 REV:= $(shell git rev-parse --short HEAD)
 BUILD_NUMBER := "${BUILD_NUMBER}"
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%S%z")
@@ -16,7 +16,7 @@ test:
 lint:
 	@golangci-lint run \
 		-D errcheck -D deadcode -D varcheck -D unused \
-		-E gosec -E dupl -E goconst -E misspell -E lll -E unparam -E gochecknoinits
+		-E gosec -E dupl -E goconst -E misspell -E lll -E unparam
 build:
 	@GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
 		go build \

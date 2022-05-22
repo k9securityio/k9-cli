@@ -44,8 +44,11 @@ func WriteCSVTo(o, e io.Writer, v interface{}) {
 
 	// write it all
 	w := csv.NewWriter(o)
-	w.WriteAll(records)
-	if err := w.Error(); err != nil {
+	err := w.WriteAll(records)
+	if err != nil {
+		fmt.Fprintln(e, err)
+	}
+	if err = w.Error(); err != nil {
 		fmt.Fprintln(e, err)
 	}
 }

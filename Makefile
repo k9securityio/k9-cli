@@ -1,4 +1,4 @@
-VERSION := $(shell git describe --abbrev=0 --tags)
+VERSION := $(if $(GITHUB_SHA),$(GITHUB_SHA),$(shell git describe --abbrev=0 --tags))
 REV:= $(shell git rev-parse --short HEAD)
 BUILD_NUMBER := "${BUILD_NUMBER}"
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%S%z")

@@ -62,6 +62,7 @@ func listCustomers(o io.Writer, cfg aws.Config, bucket string) error {
 			s := strings.Split(*p.Prefix, REPORT_LOCATION_DELIMITER)
 			if len(s) < 2 {
 				// malformed prefix
+				continue
 			}
 			fmt.Fprintln(o, s[1])
 		}

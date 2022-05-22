@@ -11,7 +11,7 @@ setup:
 	# * goimports
 
 test:
-	go test ./...
+	go test -cover ./...
 
 lint:
 	@golangci-lint run #\

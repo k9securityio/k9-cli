@@ -139,7 +139,7 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 		seen[ri.PrincipalARN] = mark
 		if ti, ok := targetByARN[ri.PrincipalARN]; !ok {
 			diffs = append(diffs, ri.AddedDiff())
-		} else if !ri.Equivallent(ti) {
+		} else if !ri.Equivalent(ti) {
 			diffs = append(diffs, ri.Diff(ti))
 		}
 	}

@@ -7,7 +7,7 @@ import (
 
 // ResourcesReport tests
 
-func TestResourcesReportItemEquivallent(t *testing.T) {
+func TestResourcesReportItemEquivalent(t *testing.T) {
 	now := time.Now()
 	cases := map[string]struct {
 		A ResourcesReportItem
@@ -29,7 +29,7 @@ func TestResourcesReportItemEquivallent(t *testing.T) {
 		"Different Tags":               {ResourcesReportItem{ResourceTags: `a`}, ResourcesReportItem{ResourceTags: `b`}, false},
 	}
 	for l, c := range cases {
-		if o := c.A.Equivallent(c.B); o != c.E {
+		if o := c.A.Equivalent(c.B); o != c.E {
 			t.Errorf("Case: %v", l)
 		}
 	}
@@ -75,7 +75,7 @@ func TestDecodeResourcesReportItem(t *testing.T) {
 	}
 	for l, c := range cases {
 		o, err := DecodeResourcesReportItem(c.Fields)
-		if !c.Expected.Equivallent(o) {
+		if !c.Expected.Equivalent(o) {
 			t.Errorf("Case: %v, output does not match expectation %v vs %v", l, o, c.Expected)
 		}
 		if err == nil && c.ExpectedErr {

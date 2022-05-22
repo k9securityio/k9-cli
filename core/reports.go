@@ -157,7 +157,7 @@ type ResourcesReportItem struct {
 	ResourceTags               string
 }
 
-func (i ResourcesReportItem) Equivallent(t ResourcesReportItem) bool {
+func (i ResourcesReportItem) Equivalent(t ResourcesReportItem) bool {
 	if i.ResourceName != t.ResourceName ||
 		i.ResourceARN != t.ResourceARN ||
 		i.ResourceType != t.ResourceType ||
@@ -233,7 +233,7 @@ type PrincipalsReportItem struct {
 	AccessKey2State       string `csv:"access_key_2_state" json:"access_key_2_state"`
 }
 
-func (i PrincipalsReportItem) Equivallent(t PrincipalsReportItem) bool {
+func (i PrincipalsReportItem) Equivalent(t PrincipalsReportItem) bool {
 	if i.PrincipalName != t.PrincipalName ||
 		i.PrincipalARN != t.PrincipalARN ||
 		i.PrincipalType != t.PrincipalType ||

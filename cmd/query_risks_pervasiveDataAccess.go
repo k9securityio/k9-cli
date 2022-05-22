@@ -43,9 +43,11 @@ func init() {
 		`tag`, []string{}, "A list of resource tags names to evaluate")
 
 	queryRisksPervasiveDataAccessCmd.Flags().Int(
-		`max-principals-with-admin`, -1, "Specify the maximum tolerable number of principals with administrative access")
+		`max-principals-with-admin`, -1,
+		"Specify the maximum tolerable number of principals with administrative access")
 
 	queryRisksPervasiveDataAccessCmd.Flags().Int(
-		`max-principals-with-read-write-delete`, -1, "Specify the maximum tolerable number of principals with read/write/delete access")
+		`max-principals-with-read-write-delete`,
+		-1, "Specify the maximum tolerable number of principals with read/write/delete access")
 
 }

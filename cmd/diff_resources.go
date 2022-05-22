@@ -121,7 +121,9 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 	}
 
 	if verbose {
-		fmt.Fprintf(stderr, "Target Analysis: %v, records: %v\nLatest Analysis: %v, records: %v\n", reportDateTime, len(latest), latest[0].AnalysisTime, len(target))
+		fmt.Fprintf(stderr,
+			"Target Analysis: %v, records: %v\nLatest Analysis: %v, records: %v\n",
+			reportDateTime, len(latest), latest[0].AnalysisTime, len(target))
 	}
 
 	// index on principal ARN for each ReportItem

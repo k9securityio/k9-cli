@@ -62,6 +62,7 @@ func listCustomers(o io.Writer, cfg aws.Config, bucket string) error {
 			s := strings.Split(*p.Prefix, REPORT_LOCATION_DELIMITER)
 			if len(s) < 2 {
 				// malformed prefix
+				continue
 			}
 			fmt.Fprintln(o, s[1])
 		}
@@ -87,6 +88,7 @@ func listAccounts(o io.Writer, cfg aws.Config, bucket, customerID string) error 
 			s := strings.Split(*p.Prefix, REPORT_LOCATION_DELIMITER)
 			if len(s) < 5 {
 				// malformed prefix
+				continue
 			}
 			fmt.Fprintln(o, s[4])
 		}
@@ -118,17 +120,20 @@ func listObjects(cfg aws.Config, bucket, customerID, account string) (ReportSet,
 
 			s := strings.Split(*o.Key, REPORT_LOCATION_DELIMITER)
 			if len(s) < 7 {
-				// TODO malformed prefix
+				// malformed prefix
+				continue
 			}
 
 			// parse the filename
 			fparts := strings.Split(s[FILENAME_POSITION_FILE], ".")
 			if len(fparts) < 3 {
-				// TODO malformed filename
+				// malformed filename
+				continue
 			}
 			rts, err := time.Parse(FILENAME_TIMESTAMP_LAYOUT, fparts[1])
 			if err != nil {
-				// TODO malformed report filename
+				// malformed report filename
+				continue
 			}
 
 			if _, ok := index[rts]; !ok {

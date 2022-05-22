@@ -29,7 +29,8 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display version information for k9-cli",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("version: %v\nrevision: %v\nbuild time: %v\nos/arch: %v/%v\n", version, revision, buildtime, runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("version: %v\nrevision: %v\nbuild time: %v\nos/arch: %v/%v\n",
+			version, revision, buildtime, runtime.GOOS, runtime.GOARCH)
 	},
 }
 

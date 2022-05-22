@@ -292,7 +292,7 @@ func dbDirWalker(out *DB, root, path string, info os.FileInfo, err error) error 
 	base := parts[DB_INDEX_POSITION_FILE]
 	baseParts := strings.Split(base, `.`)
 	if len(baseParts) != 3 {
-		return fmt.Errorf(`invalid report filename, invalid filename structure`, base)
+		return fmt.Errorf(`invalid report filename, invalid filename structure`)
 	}
 	if baseParts[1] == LATEST {
 		return nil

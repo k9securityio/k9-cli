@@ -140,7 +140,7 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 		seen[ri.ResourceARN] = mark
 		if ti, ok := targetByARN[ri.ResourceARN]; !ok {
 			diffs = append(diffs, ri.AddedDiff())
-		} else if !ri.Equivallent(ti) {
+		} else if !ri.Equivalent(ti) {
 			diffs = append(diffs, ri.Diff(ti))
 		}
 	}

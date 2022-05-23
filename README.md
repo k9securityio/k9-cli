@@ -19,6 +19,11 @@ k9 version
 
 ## Usage
 
+Start by `list`ing the k9 customers, AWS accounts, and reports available in your [secure inbox](https://k9security.io/docs/how-k9-works/).  Then `sync` reports to your local directory.  Finally analyze your IAM configuration with the `query` and `diff` commands. 
+
+> **Note**  
+> The `list` and `sync` commands require valid AWS credentials, which are resolved using the [standard AWS credential provider chain](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-default).  You will also need access to the secure s3 inbox.
+
 ### List Customers
 
 Whether you need to look up your own k9 Security customer ID or you're managing an inbox for multiple k9 customers, you can use this command to list all the k9 customers you have available in the specified S3 bucket.

@@ -6,6 +6,8 @@ The CLI synchronizes reports locally and then helps you answer common questions 
 * who can administer IAM?
 * what principal or resource access has changed?
 
+This is a 'preview' release intended for early adopters.  Only the commands documented in the **Usage** section have been implemented.  The other commands are stubs that show where the CLI is going. 
+
 ## Get Started
 Download one of the released binaries, rename the file to k9 or k9.exe and place it in your execution path. By default, the k9 CLI will expect the report database to be homed in your current working directory.
 

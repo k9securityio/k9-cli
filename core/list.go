@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -114,23 +115,7 @@ func listObjects(cfg aws.Config, bucket, customerID, account string) (ReportSet,
 		}
 
 		for _, o := range resp.Contents {
-			if !strings.HasSuffix(*o.Key, `csv`) {
-				continue
-			}
-
-			s := strings.Split(*o.Key, REPORT_LOCATION_DELIMITER)
-			if len(s) < 7 {
-				// malformed prefix
-				continue
-			}
-
-			// parse the filename
-			fparts := strings.Split(s[FILENAME_POSITION_FILE], ".")
-			if len(fparts) < 3 {
-				// malformed filename
-				continue
-			}
-			rts, err := time.Parse(FILENAME_TIMESTAMP_LAYOUT, fparts[1])
+			rts, err := extractReportTimeFromKey(*o.Key)
 			if err != nil {
 				// malformed report filename
 				continue
@@ -149,6 +134,31 @@ func listObjects(cfg aws.Config, bucket, customerID, account string) (ReportSet,
 	}
 
 	return reports, nil
+}
+
+func extractReportTimeFromKey(key string) (time.Time, error) {
+	var reportTime time.Time
+	_, err := fmt.Fprintf(os.Stderr, "filename: %s\n", key)
+	if err != nil {
+		return reportTime, err
+	}
+
+	if !strings.HasSuffix(key, `csv`) {
+		return reportTime, fmt.Errorf("report key was not for a csv filetype: %s", key)
+	}
+
+	s := strings.Split(key, REPORT_LOCATION_DELIMITER)
+	if len(s) < 7 {
+		return reportTime, fmt.Errorf("unhandled key format: %s\n", key)
+	}
+
+	// parse the filename
+	fparts := strings.Split(s[FILENAME_POSITION_FILE], ".")
+	if len(fparts) < 3 {
+		return reportTime, fmt.Errorf("unhandled filename: %s\n", s)
+	}
+	reportTime, err = time.Parse(FILENAME_TIMESTAMP_LAYOUT, fparts[1])
+	return reportTime, err
 }
 
 func displayReports(o io.Writer, reports ReportSet) error {

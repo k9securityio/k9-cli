@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -29,7 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-var TimeLatest = time.Now()
+var TimeLatest time.Time
 
 func List(o io.Writer, cfg aws.Config, bucket, customerID, account string) error {
 	if len(customerID) <= 0 {
@@ -122,7 +121,9 @@ func listObjects(cfg aws.Config, bucket, customerID, account string) (ReportSet,
 				// malformed report filename
 				continue
 			}
-
+			if rts == TimeLatest {
+				continue
+			}
 			if _, ok := index[rts]; !ok {
 				fresh := Report{
 					Bucket:     bucket,
@@ -140,7 +141,8 @@ func listObjects(cfg aws.Config, bucket, customerID, account string) (ReportSet,
 
 func extractReportTimeFromKey(key string) (time.Time, error) {
 	var reportTime time.Time
-	_, err := fmt.Fprintf(os.Stderr, "key: %s\n", key)
+	var err error
+
 	if err != nil {
 		return reportTime, err
 	}
@@ -150,7 +152,6 @@ func extractReportTimeFromKey(key string) (time.Time, error) {
 	}
 
 	keyparts := strings.Split(key, REPORT_LOCATION_DELIMITER)
-	_, err = fmt.Fprintf(os.Stderr, "key parts: %v\n", keyparts)
 
 	if len(keyparts) == 7 && keyparts[FILENAME_POSITION_YEAR] == "latest" {
 		return TimeLatest, err

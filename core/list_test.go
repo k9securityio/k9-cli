@@ -31,6 +31,11 @@ func TestExtractReportTime(t *testing.T) {
 			ExpectedTime: parseTime("2021-11-30-2350"),
 			ExpectedErr:  false,
 		},
+		`valid resource access summary file - latest`: {
+			Key:          `customers/C10001/reports/aws/139710491120/latest/principal-access-summaries.latest.csv`,
+			ExpectedTime: TimeLatest,
+			ExpectedErr:  false,
+		},
 	}
 	for l, c := range cases {
 		actualTime, err := extractReportTimeFromKey(c.Key)

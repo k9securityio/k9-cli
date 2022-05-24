@@ -29,6 +29,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+var TimeLatest = time.Now()
+
 func List(o io.Writer, cfg aws.Config, bucket, customerID, account string) error {
 	if len(customerID) <= 0 {
 		// no customers specified, list the customers
@@ -138,7 +140,7 @@ func listObjects(cfg aws.Config, bucket, customerID, account string) (ReportSet,
 
 func extractReportTimeFromKey(key string) (time.Time, error) {
 	var reportTime time.Time
-	_, err := fmt.Fprintf(os.Stderr, "filename: %s\n", key)
+	_, err := fmt.Fprintf(os.Stderr, "key: %s\n", key)
 	if err != nil {
 		return reportTime, err
 	}
@@ -147,18 +149,22 @@ func extractReportTimeFromKey(key string) (time.Time, error) {
 		return reportTime, fmt.Errorf("report key was not for a csv filetype: %s", key)
 	}
 
-	s := strings.Split(key, REPORT_LOCATION_DELIMITER)
-	if len(s) < 7 {
+	keyparts := strings.Split(key, REPORT_LOCATION_DELIMITER)
+	_, err = fmt.Fprintf(os.Stderr, "key parts: %v\n", keyparts)
+
+	if len(keyparts) == 7 && keyparts[FILENAME_POSITION_YEAR] == "latest" {
+		return TimeLatest, err
+	} else if len(keyparts) == 8 {
+		// parse the filename
+		fileparts := strings.Split(keyparts[FILENAME_POSITION_FILE], ".")
+		if len(fileparts) < 3 {
+			return reportTime, fmt.Errorf("unhandled filename: %s", keyparts)
+		}
+		reportTime, err = time.Parse(FILENAME_TIMESTAMP_LAYOUT, fileparts[1])
+		return reportTime, err
+	} else {
 		return reportTime, fmt.Errorf("unhandled key format: %s\n", key)
 	}
-
-	// parse the filename
-	fparts := strings.Split(s[FILENAME_POSITION_FILE], ".")
-	if len(fparts) < 3 {
-		return reportTime, fmt.Errorf("unhandled filename: %s\n", s)
-	}
-	reportTime, err = time.Parse(FILENAME_TIMESTAMP_LAYOUT, fparts[1])
-	return reportTime, err
 }
 
 func displayReports(o io.Writer, reports ReportSet) error {

@@ -28,6 +28,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+var TimeLatest time.Time
+
 func List(o io.Writer, cfg aws.Config, bucket, customerID, account string) error {
 	if len(customerID) <= 0 {
 		// no customers specified, list the customers
@@ -114,28 +116,14 @@ func listObjects(cfg aws.Config, bucket, customerID, account string) (ReportSet,
 		}
 
 		for _, o := range resp.Contents {
-			if !strings.HasSuffix(*o.Key, `csv`) {
-				continue
-			}
-
-			s := strings.Split(*o.Key, REPORT_LOCATION_DELIMITER)
-			if len(s) < 7 {
-				// malformed prefix
-				continue
-			}
-
-			// parse the filename
-			fparts := strings.Split(s[FILENAME_POSITION_FILE], ".")
-			if len(fparts) < 3 {
-				// malformed filename
-				continue
-			}
-			rts, err := time.Parse(FILENAME_TIMESTAMP_LAYOUT, fparts[1])
+			rts, err := extractReportTimeFromKey(*o.Key)
 			if err != nil {
 				// malformed report filename
 				continue
 			}
-
+			if rts == TimeLatest {
+				continue
+			}
 			if _, ok := index[rts]; !ok {
 				fresh := Report{
 					Bucket:     bucket,
@@ -149,6 +137,35 @@ func listObjects(cfg aws.Config, bucket, customerID, account string) (ReportSet,
 	}
 
 	return reports, nil
+}
+
+func extractReportTimeFromKey(key string) (time.Time, error) {
+	var reportTime time.Time
+	var err error
+
+	if err != nil {
+		return reportTime, err
+	}
+
+	if !strings.HasSuffix(key, `csv`) {
+		return reportTime, fmt.Errorf("report key was not for a csv filetype: %s", key)
+	}
+
+	keyparts := strings.Split(key, REPORT_LOCATION_DELIMITER)
+
+	if len(keyparts) == 7 && keyparts[FILENAME_POSITION_YEAR] == "latest" {
+		return TimeLatest, err
+	} else if len(keyparts) == 8 {
+		// parse the filename
+		fileparts := strings.Split(keyparts[FILENAME_POSITION_FILE], ".")
+		if len(fileparts) < 3 {
+			return reportTime, fmt.Errorf("unhandled filename: %s", keyparts)
+		}
+		reportTime, err = time.Parse(FILENAME_TIMESTAMP_LAYOUT, fileparts[1])
+		return reportTime, err
+	} else {
+		return reportTime, fmt.Errorf("unhandled key format: %s\n", key)
+	}
 }
 
 func displayReports(o io.Writer, reports ReportSet) error {

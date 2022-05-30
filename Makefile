@@ -11,7 +11,7 @@ setup:
 	# * goimports
 
 clean:
-	@rm -f bin/* dist/*
+	@rm -rf bin/* dist/*
 
 test:
 	go test -cover ./...

@@ -13,11 +13,6 @@ sign {
   application_identity = "Developer ID Application: K9 Security Inc. (6VQ2252GV2)"
 }
 
-dmg {
-  output_path = "dist/k9-cli.dmg"
-  volume_name = "k9-cli"
-}
-
 zip {
-  output_path = "dist/k9-cli.zip"
+  output_path = "dist/k9-osx.zip"
 }

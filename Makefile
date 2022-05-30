@@ -10,6 +10,9 @@ setup:
 	# * upx
 	# * goimports
 
+clean:
+	@rm -f bin/* dist/*
+
 test:
 	go test -cover ./...
 
@@ -43,6 +46,7 @@ push:
 	@docker push k9securityio/k9:$(REV)
 	@docker push k9securityio/k9:b$(BUILD_NUMBER)
 
+.PHONY: dist
 dist:
 	# debug with -log-level=info -log-json
 	gon .gon.hcl

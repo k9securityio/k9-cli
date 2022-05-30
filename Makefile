@@ -42,3 +42,7 @@ push:
 	@docker push k9securityio/k9:$(VERSION)
 	@docker push k9securityio/k9:$(REV)
 	@docker push k9securityio/k9:b$(BUILD_NUMBER)
+
+dist:
+	# debug with -log-level=info -log-json
+	gon .gon.hcl

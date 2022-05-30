@@ -10,7 +10,7 @@ apple_id {
 }
 
 sign {
-  application_identity = "Apple Development: devops@k9security.io (97K55TYCMF)"
+  application_identity = "Developer ID Application: K9 Security Inc. (6VQ2252GV2)"
 }
 
 dmg {

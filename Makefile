@@ -16,10 +16,15 @@ clean:
 test:
 	go test -cover ./...
 
+
+test:
+	go test ./...
+
 lint:
 	@golangci-lint run #\
 		#-D errcheck -D deadcode -D varcheck -D unused \
 		#-E gosec -E dupl -E goconst -E misspell -E lll -E unparam -E gochecknoinits
+
 build:
 	@GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
 		go build \

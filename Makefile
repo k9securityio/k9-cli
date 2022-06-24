@@ -10,15 +10,21 @@ setup:
 	# * upx
 	# * goimports
 
+clean:
+	@rm -rf bin/* dist/*
+
+test:
+	go test -cover ./...
+
+
 test:
 	go test ./...
 
 lint:
-	@golangci-lint run \
-		-D errcheck -D deadcode -D varcheck -D unused \
-		-E gosec -E dupl -E goconst -E misspell -E lll -E unparam -E gochecknoinits
-test:
-	go test ./...
+	@golangci-lint run #\
+		#-D errcheck -D deadcode -D varcheck -D unused \
+		#-E gosec -E dupl -E goconst -E misspell -E lll -E unparam -E gochecknoinits
+
 build:
 	@GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
 		go build \
@@ -44,3 +50,8 @@ push:
 	@docker push k9securityio/k9:$(VERSION)
 	@docker push k9securityio/k9:$(REV)
 	@docker push k9securityio/k9:b$(BUILD_NUMBER)
+
+.PHONY: dist
+dist:
+	# debug with -log-level=info -log-json
+	gon .gon.hcl

@@ -91,6 +91,8 @@ func init() {
 
 	syncCmd.Flags().String(`account`, ``, `AWS account for which reports will be downloaded`)
 	syncCmd.Flags().Bool(`dryrun`, false, `don't perform the download`)
+	syncCmd.Flags().Bool(`xlsx`, false, `download Excel sheets as well`)
+	syncCmd.Flags().Bool(`xlsx-only`, false, `only download Excel sheets`)
 
 	viper.BindPFlag(`account`, syncCmd.Flags().Lookup(`account`))
 

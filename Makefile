@@ -16,10 +16,6 @@ clean:
 test:
 	go test -cover ./...
 
-
-test:
-	go test ./...
-
 lint:
 	@golangci-lint run #\
 		#-D errcheck -D deadcode -D varcheck -D unused \

@@ -77,6 +77,17 @@ func (r Report) ResourcesS3ObjectKey() string {
 	return r.reportS3ObjectKey(`resources`)
 }
 
+func (r Report) ResourceAccessAuditS3ObjectKey() string {
+	return fmt.Sprintf(
+		REPORT_LOCATION_XLSX_FQ_PATTERN,
+		r.CustomerID,
+		r.Account,
+		strconv.Itoa(r.Timestamp.Year()),
+		r.Timestamp.Format(MONTH_TIMESTAMP_LAYOUT),
+		`resource-access-audit`,
+		r.Timestamp.Format(FILENAME_TIMESTAMP_LAYOUT))
+}
+
 func (r Report) reportS3ObjectKey(name string) string {
 	return fmt.Sprintf(
 		REPORT_LOCATION_CSV_FQ_PATTERN,

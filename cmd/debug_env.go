@@ -43,7 +43,7 @@ var debugEnvCmd = &cobra.Command{
 		bucket, _ := cmd.Flags().GetString(`bucket`)
 		if len(bucket) > 0 {
 			client := s3.NewFromConfig(cfg)
-			s3db, err := core.LoadS3DB(client, bucket)
+			s3db, err := core.LoadS3DB(client, bucket, core.ReportTypeSelector{core.EXT_CSV, core.EXT_XLSX})
 			if err != nil {
 				fmt.Fprintf(cmd.ErrOrStderr(), "Unable to load s3 database, %v\n", err)
 			} else {

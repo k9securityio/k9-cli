@@ -20,13 +20,15 @@ var (
 	REPORT_LOCATION_PREFIX           = `customers/`
 	REPORT_LOCATION_DELIMITER        = `/`
 	REPORT_LOCATION_CSV_FQ_PATTERN   = `customers/%s/reports/aws/%s/%s/%s/%s.%s.csv`
+	REPORT_LOCATION_XLSX_FQ_PATTERN  = `customers/%s/reports/aws/%s/%s/%s/%s.%s.xlsx`
 	REPORT_LOCATION_CUSTOMER_PATTERN = `customers/%s/reports/aws/`
 	REPORT_LOCATION_ACCOUNT_PATTERN  = `customers/%s/reports/aws/%s/`
 	REPORT_LOCATION_MONTH_PATTERN    = `customers/%s/reports/aws/%s/%s/%s`
 )
 
 const (
-	EXT_CSV = `csv`
+	EXT_CSV  = `csv`
+	EXT_XLSX = `xlsx`
 )
 
 // report file name prefixes

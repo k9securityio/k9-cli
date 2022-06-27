@@ -45,6 +45,7 @@ var syncCmd = &cobra.Command{
 		concurrency, _ := cmd.Flags().GetInt(`concurrency`)
 		verbose, _ := cmd.Flags().GetBool(`verbose`)
 		dryrun, _ := cmd.Flags().GetBool(`dryrun`)
+		xlsx, _ := cmd.Flags().GetBool(`include-xlsx`)
 		stdout := cmd.OutOrStdout()
 		stderr := cmd.ErrOrStderr()
 
@@ -55,7 +56,11 @@ var syncCmd = &cobra.Command{
 			return
 		}
 
-		s3db, err := core.LoadS3DB(s3.NewFromConfig(cfg), bucket)
+		selector := []string{core.EXT_CSV}
+		if xlsx {
+			selector = append(selector, core.EXT_XLSX)
+		}
+		s3db, err := core.LoadS3DB(s3.NewFromConfig(cfg), bucket, core.ReportTypeSelector(selector))
 		if err != nil {
 			fmt.Fprintf(stderr, "Error loading remote database: %v+\n", err)
 			os.Exit(1)
@@ -91,6 +96,7 @@ func init() {
 
 	syncCmd.Flags().String(`account`, ``, `AWS account for which reports will be downloaded`)
 	syncCmd.Flags().Bool(`dryrun`, false, `don't perform the download`)
+	syncCmd.Flags().Bool(`include-xlsx`, false, `download Excel sheets as well`)
 
 	viper.BindPFlag(`account`, syncCmd.Flags().Lookup(`account`))
 

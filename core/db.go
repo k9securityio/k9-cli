@@ -181,9 +181,11 @@ func LoadLocalDB(root string) (DB, error) {
 	return out, err
 }
 
+type ReportTypeSelector []string
+
 // LoadS3DB enumerates and pulls metadata for all customers, accounts, and reports in
 // the specified S3 bucket. It does however, skip unknown report types.
-func LoadS3DB(client s3.ListObjectsV2APIClient, bucket string) (DB, error) {
+func LoadS3DB(client s3.ListObjectsV2APIClient, bucket string, selector ReportTypeSelector) (DB, error) {
 	out := DB{Customers: map[string]Customer{}}
 	pages := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{Bucket: &bucket})
 	for pages.HasMorePages() {
@@ -191,8 +193,15 @@ func LoadS3DB(client s3.ListObjectsV2APIClient, bucket string) (DB, error) {
 		if err != nil {
 			return out, err
 		}
+
 		for _, v := range resp.Contents {
-			if !strings.HasSuffix(*v.Key, EXT_CSV) {
+			isSelected := false
+			for _, t := range selector {
+				if !isSelected && strings.HasSuffix(*v.Key, t) {
+					isSelected = true
+				}
+			}
+			if !isSelected {
 				continue
 			}
 

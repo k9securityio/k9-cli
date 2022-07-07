@@ -122,6 +122,48 @@ Sample output showing IAM admins, simplified by piping through `jq '.[] | .princ
 "k9-dev-appeng"
 ```
 
+### Query Principals at a Point in Time
+
+You can use the `k9` CLI to query the set of principals for an account at a point in time (or from the latest report).
+
+```sh
+k9 query principals \
+    --customer_id $K9_CUSTOMER_ID \
+    --account $K9_ACCOUNT_ID \
+    --analysis-date 2022-04-29
+```
+
+You can use a combination of the `arns` and `names` flags to qualify a list of exact matching records.
+
+```sh
+k9 query principals \
+    --customer_id $K9_CUSTOMER_ID \
+    --account $K9_ACCOUNT_ID \
+    --arns $SOME_ROLE_ARN,$SOME_USER_ARN --arns $ANOTHER_USER_ARN \
+    --names $A_ROLE_NAME
+```
+
+### Query Resources at a Point in Time
+
+You can use the `k9` CLI to query the set of resources for an account at a point in time (or from the latest report).
+
+```sh
+k9 query resources \
+    --customer_id $K9_CUSTOMER_ID \
+    --account $K9_ACCOUNT_ID \
+    --analysis-date 2022-04-29
+```
+
+You can use a combination of the `arns` and `names` flags to qualify a list of exact matching records.
+
+```sh
+k9 query resources \
+    --customer_id $K9_CUSTOMER_ID \
+    --account $K9_ACCOUNT_ID \
+    --arns $SOME_BUCKET_ARN,$SOME_MACHINE_ARN --arns $ANOTHER_BUCKET_ARN \
+    --names $A_KMS_KEY_NAME
+```
+
 ### Changes to Principals or Resources Over Time
 
 You can use the `k9` CLI to determine what has changed in an account! Run the following command to generate a diff report between a historical analysis date and the latest report.

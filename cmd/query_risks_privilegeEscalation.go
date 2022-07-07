@@ -20,6 +20,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -34,107 +35,117 @@ var queryRisksPrivilegeEscalationCmd = &cobra.Command{
 	Aliases: []string{`iam-admins`},
 	Short:   "Show privilege escalation risks",
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose, err := cmd.Flags().GetBool(FLAG_VERBOSE)
+		format, err := cmd.Flags().GetString(FLAG_FORMAT)
+		customerID, err := cmd.Flags().GetString(FLAG_CUSTOMER_ID)
+		accountID, err := cmd.Flags().GetString(FLAG_ACCOUNT)
+		analysisDate, err := cmd.Flags().GetString(FLAG_ANALYSIS_DATE)
+		reportHome, err := cmd.Flags().GetString(FLAG_REPORT_HOME)
+		stdout := cmd.OutOrStdout()
+		stderr := cmd.ErrOrStderr()
 
-		verbose, _ := cmd.Flags().GetBool(`verbose`)
-		customerID := cmd.Flags().Lookup(`customer_id`).Value.String()
-		accountID := cmd.Flags().Lookup(`account`).Value.String()
-		analysisDate, _ := cmd.Flags().GetString(`analysis-date`)
-
-		// load the local report database
-		db, err := core.LoadLocalDB(cmd.Flags().Lookup(`report-home`).Value.String())
 		if err != nil {
-			fmt.Printf("Unable to load local database, %v\n", err)
-		}
-		if verbose {
-			defer func() {
-				total, accounts, customers := db.Sizes()
-				fmt.Fprintf(cmd.ErrOrStderr(),
-					"Local database:\n\tCustomers:\t\t%v\n\tAccounts:\t\t%v\n\tTotal analysis dates: \t%v\n",
-					customers, accounts, total)
-			}()
-		}
-
-		// determine the file name for the desired report
-		var path string
-		if len(analysisDate) > 0 {
-			reportDateTime, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
-			if err != nil {
-				fmt.Fprintf(cmd.ErrOrStderr(), "Invalid analysis-date: %v\n", analysisDate)
-				os.Exit(1)
-				return
-			}
-			if qr := db.GetPathForCustomerAccountTimeKind(
-				customerID, accountID, reportDateTime,
-				core.REPORT_TYPE_PREFIX_PRINCIPALS); qr != nil {
-				path = *qr
-			} else {
-				fmt.Fprintf(cmd.ErrOrStderr(),
-					"No such report: %v, %v, %v, total records: %v\n",
-					customerID, accountID,
-					reportDateTime.Format(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT),
-					db.Size())
-				os.Exit(1)
-				return
-			}
-		} else {
-			// latest
-			fmt.Fprintln(cmd.ErrOrStderr(), `running latest report`)
-
-			if qr := db.GetPathForCustomerAccountLatestKind(
-				customerID, accountID, core.REPORT_TYPE_PREFIX_PRINCIPALS); qr != nil {
-				path = *qr
-			} else {
-				// TODO handle no such report
-				fmt.Fprintf(cmd.ErrOrStderr(),
-					"No such report: %v, %v, total records: %v\n",
-					customerID, accountID, db.Size())
-				os.Exit(1)
-				return
-			}
-		}
-
-		f, err := os.Open(path)
-		if err != nil {
-			fmt.Fprintf(cmd.ErrOrStderr(), "Unable to open the specified report: %v\n", err)
+			fmt.Fprintf(stderr, err.Error())
 			os.Exit(1)
 			return
 		}
 
-		// Open and load the report
-		records, err := core.LoadPrincipalsReport(f)
-		if err != nil {
-			fmt.Fprintf(cmd.ErrOrStderr(), "Unable to analyze the specified report: %v\n", err)
-			os.Exit(1)
-			return
-		}
-
-		// reducer - apply filtering or detective logic
-		output := []core.PrincipalsReportItem{}
-		for _, r := range records {
-			if r.PrincipalIsIAMAdmin {
-				output = append(output, r)
-			}
-		}
-
-		// transform for output
-		// branch on the PersistentFlag `format` - should be one of json, csv, tap, or PDF
-		switch cmd.Flags().Lookup(`format`).Value.String() {
-		case `pdf`:
-		case `csv`:
-			views.WriteCSVTo(os.Stdout, cmd.ErrOrStderr(), output)
-		case `tap`:
-		case `json`:
-			b, err := json.Marshal(output)
-			if err != nil {
-				fmt.Fprintln(cmd.ErrOrStderr(), `unable to marshal report to json`)
-			}
-			fmt.Println(string(b))
-		default:
-			fmt.Fprintln(cmd.ErrOrStderr(), `invalid output type`)
-		}
+		DoQueryRisksPrivilegeEscalation(stdout, stderr, reportHome, customerID, accountID, analysisDate, format, verbose)
 	},
 }
 
 func init() {
 	queryRisksCmd.AddCommand(queryRisksPrivilegeEscalationCmd)
+}
+
+func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, customerID, accountID, analysisDate, format string, verbose bool) {
+	// load the local report database
+	db, err := core.LoadLocalDB(reportHome)
+	if err != nil {
+		fmt.Printf("Unable to load local database, %v\n", err)
+	}
+	if verbose {
+		defer func() {
+			total, accounts, customers := db.Sizes()
+			fmt.Fprintf(stderr,
+				"Local database:\n\tCustomers:\t\t%v\n\tAccounts:\t\t%v\n\tTotal analysis dates: \t%v\n",
+				customers, accounts, total)
+		}()
+	}
+
+	// determine the file name for the desired report
+	var path string
+	if len(analysisDate) > 0 {
+		reportDateTime, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
+		if err != nil {
+			fmt.Fprintf(stderr, "Invalid analysis-date: %v\n", analysisDate)
+			os.Exit(1)
+			return
+		}
+		if qr := db.GetPathForCustomerAccountTimeKind(
+			customerID, accountID, reportDateTime,
+			core.REPORT_TYPE_PREFIX_PRINCIPALS); qr != nil {
+			path = *qr
+		} else {
+			fmt.Fprintf(stderr,
+				"No such report: %v, %v, %v, total records: %v\n",
+				customerID, accountID,
+				reportDateTime.Format(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT),
+				db.Size())
+			os.Exit(1)
+			return
+		}
+	} else {
+		// latest
+		fmt.Fprintln(stderr, `running latest report`)
+		if qr := db.GetPathForCustomerAccountLatestKind(
+			customerID, accountID, core.REPORT_TYPE_PREFIX_PRINCIPALS); qr != nil {
+			path = *qr
+		} else {
+			fmt.Fprintf(stderr,
+				"No such report: %v, %v, total records: %v\n",
+				customerID, accountID, db.Size())
+			os.Exit(1)
+			return
+		}
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		fmt.Fprintf(stderr, "Unable to open the specified report: %v\n", err)
+		os.Exit(1)
+		return
+	}
+
+	// Open and load the report
+	records, err := core.LoadPrincipalsReport(f)
+	if err != nil {
+		fmt.Fprintf(stderr, "Unable to analyze the specified report: %v\n", err)
+		os.Exit(1)
+		return
+	}
+
+	// reducer - apply filtering or detective logic
+	output := []core.PrincipalsReportItem{}
+	for _, r := range records {
+		if r.PrincipalIsIAMAdmin {
+			output = append(output, r)
+		}
+	}
+
+	// transform for output
+	switch format {
+	case `pdf`:
+	case `csv`:
+		views.WriteCSVTo(stdout, stderr, output)
+	case `tap`:
+	case `json`:
+		b, err := json.Marshal(output)
+		if err != nil {
+			fmt.Fprintln(stderr, `unable to marshal report to json`)
+		}
+		fmt.Fprintln(stdout, string(b))
+	default:
+		fmt.Fprintln(stderr, `invalid output type`)
+	}
 }

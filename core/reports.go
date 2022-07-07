@@ -154,18 +154,18 @@ func LoadPrincipalsReport(in io.Reader) ([]PrincipalsReportItem, error) {
 }
 
 type ResourcesReportItem struct {
-	AnalysisTime time.Time
-	ResourceName string
-	ResourceARN  string
-	ResourceType string
+	AnalysisTime time.Time `csv:"analysis_time" json:"analysis_time"`
+	ResourceName string    `csv:"resource_name" json:"resource_name"`
+	ResourceARN  string    `csv:"resource_arn" json:"resource_arn"`
+	ResourceType string    `csv:"resource_type" json:"resource_type"`
 
-	ResourceTagBusinessUnit    string
-	ResourceTagEnvironment     string
-	ResourceTagOwner           string
-	ResourceTagConfidentiality string
-	ResourceTagIntegrity       string
-	ResourceTagAvailability    string
-	ResourceTags               string
+	ResourceTagBusinessUnit    string `csv:"resource_tag_business_unit" json:"resource_tag_business_unit"`
+	ResourceTagEnvironment     string `csv:"resource_tag_environment" json:"resource_tag_environment"`
+	ResourceTagOwner           string `csv:"resource_tag_owner" json:"resource_tag_owner"`
+	ResourceTagConfidentiality string `csv:"resource_tag_confidentiality" json:"resource_tag_confidentiality"`
+	ResourceTagIntegrity       string `csv:"resource_tag_integrity" json:"resource_tag_integrity"`
+	ResourceTagAvailability    string `csv:"resource_tag_availability" json:"resource_tag_availability"`
+	ResourceTags               string `csv:"resource_tags" json:"resource_tags"`
 }
 
 func (i ResourcesReportItem) Equivalent(t ResourcesReportItem) bool {

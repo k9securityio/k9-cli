@@ -135,6 +135,18 @@ func LoadPrincipalAccessSummaryReport(in io.Reader) ([]PrincipalAccessSummaryRep
 	return collector.Items, err
 }
 
+// LoadResourceAccessSummaryReport reads CSV from the provided reader.
+func LoadResourceAccessSummaryReport(in io.Reader) ([]ResourceAccessSummaryReportItem, error) {
+	ts := []ResourceAccessSummaryReportItem{}
+	if in == nil {
+		return ts, &IllegalArgumentError{`in`, `invalid input`}
+	}
+
+	collector := &ResourceAccessSummaryReport{Items: []ResourceAccessSummaryReportItem{}}
+	err := loadReport(in, collector)
+	return collector.Items, err
+}
+
 type ResourcesReportItem struct {
 	AnalysisTime time.Time `csv:"analysis_time" json:"analysis_time"`
 	ResourceName string    `csv:"resource_name" json:"resource_name"`
@@ -186,19 +198,6 @@ func DecodeResourcesReportItem(in []string) (o ResourcesReportItem, err error) {
 	o.ResourceTagAvailability = in[9]
 	o.ResourceTags = in[10]
 	return
-}
-
-type ResourceAccessSummaryReportItem struct {
-	AnalysisTime     time.Time `csv:"analysis_time" json:"analysis_time"`
-	ServiceName      string    `csv:"service" json:"service"`
-	ResourceName     string    `csv:"resource_" json:"resource_"`
-	ResourceARN      string    `csv:"resource_" json:"resource_"`
-	AccessCapability string    `csv:"access_capability" json:"access_capability"`
-	PrincipalType    string    `csv:"principal_type" json:"principal_type"`
-	PrincipalName    string    `csv:"principal_name" json:"principal_name"`
-	PrincipalARN     string    `csv:"principal_arn" json:"principal_arn"`
-
-	ResourceTagConfidentiality string
 }
 
 type PrincipalsReportItem struct {
@@ -323,6 +322,53 @@ func DecodePrincipalAccessSummaryReportItem(in []string) (o PrincipalAccessSumma
 	return
 }
 
+type ResourceAccessSummaryReportItem struct {
+	AnalysisTime     time.Time `csv:"analysis_time" json:"analysis_time"`
+	ServiceName      string    `csv:"service_name" json:"service_name"`
+	ResourceName     string    `csv:"resource_name" json:"resource_name"`
+	ResourceARN      string    `csv:"resource_arn" json:"resource_arn"`
+	AccessCapability string    `csv:"access_capability" json:"access_capability"`
+	PrincipalType    string    `csv:"principal_type" json:"principal_type"`
+	PrincipalName    string    `csv:"principal_name" json:"principal_name"`
+	PrincipalARN     string    `csv:"principal_arn" json:"principal_arn"`
+
+	ResourceTagConfidentiality string `csv:"resource_tag_confidentiality" json:"resource_tag_confidentiality"`
+}
+
+func (i ResourceAccessSummaryReportItem) Equivalent(t ResourceAccessSummaryReportItem) bool {
+	if i.PrincipalName != t.PrincipalName ||
+		i.PrincipalARN != t.PrincipalARN ||
+		i.PrincipalType != t.PrincipalType ||
+		i.ServiceName != t.ServiceName ||
+		i.AccessCapability != t.AccessCapability ||
+		i.ResourceName != t.ResourceName ||
+		i.ResourceARN != t.ResourceARN ||
+		i.ResourceTagConfidentiality != t.ResourceTagConfidentiality {
+		return false
+	}
+	return true
+}
+
+func DecodeResourceAccessSummaryReportItem(in []string) (o ResourceAccessSummaryReportItem, err error) {
+	if len(in) != 9 {
+		err = &IllegalArgumentError{`in`, `invalid ResourceAccessReportItem entry`}
+		return
+	}
+	o.AnalysisTime, err = time.Parse(time.RFC3339Nano, in[0])
+	if err != nil {
+		return
+	}
+	o.ServiceName = in[1]
+	o.ResourceName = in[2]
+	o.ResourceARN = in[3]
+	o.AccessCapability = in[4]
+	o.PrincipalType = in[5]
+	o.PrincipalName = in[6]
+	o.PrincipalARN = in[7]
+	o.ResourceTagConfidentiality = in[8]
+	return
+}
+
 func loadReport(in io.Reader, c Collector) error {
 	rr := csv.NewReader(in)
 	records, err := rr.ReadAll()
@@ -344,6 +390,19 @@ func loadReport(in io.Reader, c Collector) error {
 
 type Collector interface {
 	Collect(in []string) error
+}
+
+type ResourceAccessSummaryReport struct {
+	Items []ResourceAccessSummaryReportItem
+}
+
+func (r *ResourceAccessSummaryReport) Collect(in []string) error {
+	ri, err := DecodeResourceAccessSummaryReportItem(in)
+	if err != nil {
+		return err
+	}
+	r.Items = append(r.Items, ri)
+	return nil
 }
 
 type PrincipalAccessSummaryReport struct {

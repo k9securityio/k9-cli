@@ -133,24 +133,21 @@ func LoadPrincipalsReport(in io.Reader) ([]PrincipalsReportItem, error) {
 		return ts, &IllegalArgumentError{`in`, `invalid input`}
 	}
 
-	rr := csv.NewReader(in)
-	records, err := rr.ReadAll()
-	if err != nil {
-		return ts, err
+	collector := &PrincipalsReport{Items: []PrincipalsReportItem{}}
+	err := loadReport(in, collector)
+	return collector.Items, err
+}
+
+// LoadPrincipalAccessSummaryReport reads CSV from the provided reader.
+func LoadPrincipalAccessSummaryReport(in io.Reader) ([]PrincipalAccessSummaryReportItem, error) {
+	ts := []PrincipalAccessSummaryReportItem{}
+	if in == nil {
+		return ts, &IllegalArgumentError{`in`, `invalid input`}
 	}
 
-	for i, v := range records {
-		// skip the header row
-		if i == 0 {
-			continue
-		}
-		ri, err := DecodePrincipalsReportItem(v)
-		if err != nil {
-			return ts, err
-		}
-		ts = append(ts, ri)
-	}
-	return ts, nil
+	collector := &PrincipalAccessSummaryReport{Items: []PrincipalAccessSummaryReportItem{}}
+	err := loadReport(in, collector)
+	return collector.Items, err
 }
 
 type ResourcesReportItem struct {
@@ -207,14 +204,14 @@ func DecodeResourcesReportItem(in []string) (o ResourcesReportItem, err error) {
 }
 
 type ResourceAccessSummaryReportItem struct {
-	AnalysisTime     time.Time
-	ServiceName      string
-	ResourceName     string
-	ResourceARN      string
-	AccessCapability string
-	PrincipalType    string
-	PrincipalName    string
-	PrincipalARN     string
+	AnalysisTime     time.Time `csv:"analysis_time" json:"analysis_time"`
+	ServiceName      string    `csv:"service" json:"service"`
+	ResourceName     string    `csv:"resource_" json:"resource_"`
+	ResourceARN      string    `csv:"resource_" json:"resource_"`
+	AccessCapability string    `csv:"access_capability" json:"access_capability"`
+	PrincipalType    string    `csv:"principal_type" json:"principal_type"`
+	PrincipalName    string    `csv:"principal_name" json:"principal_name"`
+	PrincipalARN     string    `csv:"principal_arn" json:"principal_arn"`
 
 	ResourceTagConfidentiality string
 }
@@ -270,7 +267,7 @@ func (i PrincipalsReportItem) Equivalent(t PrincipalsReportItem) bool {
 
 func DecodePrincipalsReportItem(in []string) (o PrincipalsReportItem, err error) {
 	if len(in) != 19 {
-		err = &IllegalArgumentError{`in`, `invalid PrincipalReportItem entry`}
+		err = &IllegalArgumentError{`in`, `invalid PrincipalsReportItem entry`}
 		return
 	}
 	o.AnalysisTime, err = time.Parse(time.RFC3339Nano, in[0])
@@ -299,12 +296,93 @@ func DecodePrincipalsReportItem(in []string) (o PrincipalsReportItem, err error)
 }
 
 type PrincipalAccessSummaryReportItem struct {
-	AnalysisTime     time.Time
-	PrincipalName    string
-	PrincipalARN     string
-	PrincipalType    string
-	PrincipalTags    string
-	ServiceName      string
-	AccessCapability string
-	ResourceARN      string
+	AnalysisTime     time.Time `csv:"analysis_time" json:"analysis_time"`
+	PrincipalName    string    `csv:"principal_name" json:"principal_name"`
+	PrincipalARN     string    `csv:"principal_arn" json:"principal_arn"`
+	PrincipalType    string    `csv:"principal_type" json:"principal_type"`
+	PrincipalTags    string    `csv:"principal_tags" json:"principal_tags"`
+	ServiceName      string    `csv:"service_name" json:"service_name"`
+	AccessCapability string    `csv:"access_capability" json:"access_capability"`
+	ResourceARN      string    `csv:"resource_arn" json:"resource_arn"`
+}
+
+func (i PrincipalAccessSummaryReportItem) Equivalent(t PrincipalAccessSummaryReportItem) bool {
+	if i.PrincipalName != t.PrincipalName ||
+		i.PrincipalARN != t.PrincipalARN ||
+		i.PrincipalType != t.PrincipalType ||
+		i.PrincipalTags != t.PrincipalTags ||
+		i.ServiceName != t.ServiceName ||
+		i.AccessCapability != t.AccessCapability ||
+		i.ResourceARN != t.ResourceARN {
+		return false
+	}
+	return true
+}
+
+func DecodePrincipalAccessSummaryReportItem(in []string) (o PrincipalAccessSummaryReportItem, err error) {
+	if len(in) != 8 {
+		err = &IllegalArgumentError{`in`, `invalid PrincipalAccessReportItem entry`}
+		return
+	}
+	o.AnalysisTime, err = time.Parse(time.RFC3339Nano, in[0])
+	if err != nil {
+		return
+	}
+	o.PrincipalName = in[1]
+	o.PrincipalARN = in[2]
+	o.PrincipalType = in[3]
+	o.PrincipalTags = in[4]
+	o.ServiceName = in[5]
+	o.AccessCapability = in[6]
+	o.ResourceARN = in[7]
+	return
+}
+
+func loadReport(in io.Reader, c Collector) error {
+	rr := csv.NewReader(in)
+	records, err := rr.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	for i, v := range records {
+		// skip the header row
+		if i == 0 {
+			continue
+		}
+		if err := c.Collect(v); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type Collector interface {
+	Collect(in []string) error
+}
+
+type PrincipalAccessSummaryReport struct {
+	Items []PrincipalAccessSummaryReportItem
+}
+
+func (r *PrincipalAccessSummaryReport) Collect(in []string) error {
+	ri, err := DecodePrincipalAccessSummaryReportItem(in)
+	if err != nil {
+		return err
+	}
+	r.Items = append(r.Items, ri)
+	return nil
+}
+
+type PrincipalsReport struct {
+	Items []PrincipalsReportItem
+}
+
+func (r *PrincipalsReport) Collect(in []string) error {
+	ri, err := DecodePrincipalsReportItem(in)
+	if err != nil {
+		return err
+	}
+	r.Items = append(r.Items, ri)
+	return nil
 }

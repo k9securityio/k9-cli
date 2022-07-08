@@ -164,6 +164,20 @@ k9 query resources \
     --names $A_KMS_KEY_NAME
 ```
 
+### Answer Questions about Resource and Principal Access
+
+```sh
+k9 query resource-access \
+    --customer_id $K9_CUSTOMER_ID \
+    --account $K9_ACCOUNT_ID \
+```
+
+```sh
+k9 query principal-access \
+    --customer_id $K9_CUSTOMER_ID \
+    --account $K9_ACCOUNT_ID \
+```
+
 ### Changes to Principals or Resources Over Time
 
 You can use the `k9` CLI to determine what has changed in an account! Run the following command to generate a diff report between a historical analysis date and the latest report.

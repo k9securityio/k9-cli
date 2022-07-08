@@ -106,24 +106,9 @@ func LoadResourcesReport(in io.Reader) ([]ResourcesReportItem, error) {
 		return ts, &IllegalArgumentError{`in`, `invalid input`}
 	}
 
-	rr := csv.NewReader(in)
-	records, err := rr.ReadAll()
-	if err != nil {
-		return ts, err
-	}
-
-	for i, v := range records {
-		// skip the header row
-		if i == 0 {
-			continue
-		}
-		ri, err := DecodeResourcesReportItem(v)
-		if err != nil {
-			return ts, err
-		}
-		ts = append(ts, ri)
-	}
-	return ts, nil
+	collector := &ResourcesReport{Items: []ResourcesReportItem{}}
+	err := loadReport(in, collector)
+	return collector.Items, err
 }
 
 // LoadPrincipalsReport reads CSV from the provided reader.
@@ -380,6 +365,19 @@ type PrincipalsReport struct {
 
 func (r *PrincipalsReport) Collect(in []string) error {
 	ri, err := DecodePrincipalsReportItem(in)
+	if err != nil {
+		return err
+	}
+	r.Items = append(r.Items, ri)
+	return nil
+}
+
+type ResourcesReport struct {
+	Items []ResourcesReportItem
+}
+
+func (r *ResourcesReport) Collect(in []string) error {
+	ri, err := DecodeResourcesReportItem(in)
 	if err != nil {
 		return err
 	}

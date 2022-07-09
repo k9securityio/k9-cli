@@ -34,30 +34,25 @@ var queryRisksPrivilegeEscalationCmd = &cobra.Command{
 	Aliases: []string{`iam-admins`},
 	Short:   "Show privilege escalation risks",
 	Run: func(cmd *cobra.Command, args []string) {
-		verbose, err := cmd.Flags().GetBool(FLAG_VERBOSE)
-		format, err := cmd.Flags().GetString(FLAG_FORMAT)
-		customerID, err := cmd.Flags().GetString(FLAG_CUSTOMER_ID)
-		accountID, err := cmd.Flags().GetString(FLAG_ACCOUNT)
-		analysisDate, err := cmd.Flags().GetString(FLAG_ANALYSIS_DATE)
-		reportHome, err := cmd.Flags().GetString(FLAG_REPORT_HOME)
+		verbose, _ := cmd.Flags().GetBool(FLAG_VERBOSE)
+		format, _ := cmd.Flags().GetString(FLAG_FORMAT)
+		customerID, _ := cmd.Flags().GetString(FLAG_CUSTOMER_ID)
+		accountID, _ := cmd.Flags().GetString(FLAG_ACCOUNT)
+		analysisDate, _ := cmd.Flags().GetString(FLAG_ANALYSIS_DATE)
+		reportHome, _ := cmd.Flags().GetString(FLAG_REPORT_HOME)
 		stdout := cmd.OutOrStdout()
 		stderr := cmd.ErrOrStderr()
 
-		var reportDateTime time.Time
+		var reportDateTime *time.Time
 		if len(analysisDate) > 0 {
-			reportDateTime, err = time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
+			td, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
 			if err != nil {
-				err = fmt.Errorf("invalid analysis-date: %v\n", analysisDate)
+				fmt.Fprintf(stderr, "invalid analysis-date: %v\n", analysisDate)
 			}
+			reportDateTime = &td
 		}
 
-		if err != nil {
-			fmt.Fprintf(stderr, err.Error())
-			os.Exit(1)
-			return
-		}
-
-		DoQueryRisksPrivilegeEscalation(stdout, stderr, reportHome, customerID, accountID, format, &reportDateTime, verbose)
+		DoQueryRisksPrivilegeEscalation(stdout, stderr, reportHome, customerID, accountID, format, reportDateTime, verbose)
 	},
 }
 

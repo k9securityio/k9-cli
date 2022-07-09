@@ -63,6 +63,8 @@ func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, custo
 	db, err := core.LoadLocalDB(reportHome)
 	if err != nil {
 		fmt.Printf("Unable to load local database, %v\n", err)
+		os.Exit(1)
+		return
 	}
 	if verbose {
 		defer func() {

@@ -157,9 +157,11 @@ func DoQueryPrincipal(stdout, stderr io.Writer,
 	for _, ri := range report {
 		if _, ok := principals[ri.PrincipalARN]; ok {
 			results = append(results, ri)
+			continue
 		}
 		if _, ok := principals[ri.PrincipalName]; ok {
 			results = append(results, ri)
+			continue
 		}
 	}
 	views.Display(stdout, stderr, format, results)

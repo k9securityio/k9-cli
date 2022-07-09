@@ -156,9 +156,11 @@ func DoQueryResourceAccessSummary(stdout, stderr io.Writer,
 	for _, ri := range report {
 		if _, ok := resources[ri.ResourceARN]; ok {
 			results = append(results, ri)
+			continue
 		}
 		if _, ok := resources[ri.ResourceName]; ok {
 			results = append(results, ri)
+			continue
 		}
 	}
 	views.Display(stdout, stderr, format, results)

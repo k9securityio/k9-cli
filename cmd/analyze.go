@@ -18,8 +18,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -27,9 +25,6 @@ import (
 var analyzeCmd = &cobra.Command{
 	Use:   `analyze`,
 	Short: `Start analysis on current configuration`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Please specify a target to analyze")
-	},
 }
 
 // init defines and wires flags

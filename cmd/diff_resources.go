@@ -40,7 +40,20 @@ var diffResourcesCmd = &cobra.Command{
 		reportHome, _ := cmd.Flags().GetString(`report-home`)
 		stdout := cmd.OutOrStdout()
 		stderr := cmd.ErrOrStderr()
-		DoDiffResources(stdout, stderr, reportHome, customerID, accountID, analysisDate, verbose)
+
+		if len(analysisDate) <= 0 {
+			fmt.Fprintln(stderr, `an analysis-date is required for comparison`)
+			os.Exit(1)
+			return
+		}
+
+		td, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
+		if err != nil {
+			fmt.Fprintf(stderr, "invalid analysis-date: %v\n", analysisDate)
+			os.Exit(1)
+		}
+
+		DoDiffResources(stdout, stderr, reportHome, customerID, accountID, td, verbose)
 	},
 }
 
@@ -50,18 +63,19 @@ func init() {
 }
 
 // DoDiffResources
-func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID, analysisDate string, verbose bool) {
+func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID string, analysisDate time.Time, verbose bool) {
 	// load the local report database
 	db, err := core.LoadLocalDB(reportHome)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to load local database, %v\n", err)
+		os.Exit(1)
 	}
 
 	// get the latest analysis
 	var latestReportPath, targetReportPath string
 
-	if qr := db.GetPathForCustomerAccountLatestKind(
-		customerID, accountID, core.REPORT_TYPE_PREFIX_RESOURCES); qr != nil {
+	if qr := db.GetPathForCustomerAccountTimeKind(
+		customerID, accountID, nil, core.REPORT_TYPE_PREFIX_RESOURCES); qr != nil {
 		latestReportPath = *qr
 	} else {
 		fmt.Fprintf(stderr,
@@ -73,21 +87,15 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 
 	// get the target analysis
 	// determine the file name for the desired report
-	reportDateTime, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
-	if err != nil {
-		fmt.Fprintf(stderr, "Invalid analysis-date: %v\n", analysisDate)
-		os.Exit(1)
-		return
-	}
 	if qr := db.GetPathForCustomerAccountTimeKind(
-		customerID, accountID, reportDateTime,
+		customerID, accountID, &analysisDate,
 		core.REPORT_TYPE_PREFIX_RESOURCES); qr != nil {
 		targetReportPath = *qr
 	} else {
 		fmt.Fprintf(stderr,
 			"No such target report: %v, %v, %v, total records: %v\n",
 			customerID, accountID,
-			reportDateTime.Format(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT),
+			analysisDate.Format(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT),
 			db.Size())
 		os.Exit(1)
 		return
@@ -107,13 +115,15 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 		return
 	}
 
-	latest, err := core.LoadResourcesReport(lf)
+	latest := &core.ResourcesReport{}
+	err = core.LoadReport(lf, latest)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the latest report: %v\n", err)
 		os.Exit(1)
 		return
 	}
-	target, err := core.LoadResourcesReport(tf)
+	target := &core.ResourcesReport{}
+	err = core.LoadReport(tf, target)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the target report: %v\n", err)
 		os.Exit(1)
@@ -123,12 +133,12 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 	if verbose {
 		fmt.Fprintf(stderr,
 			"Target Analysis: %v, records: %v\nLatest Analysis: %v, records: %v\n",
-			reportDateTime, len(latest), latest[0].AnalysisTime, len(target))
+			analysisDate, len(latest.Items), latest.Items[0].AnalysisTime, len(target.Items))
 	}
 
 	// index on principal ARN for each ReportItem
 	targetByARN := map[string]core.ResourcesReportItem{}
-	for _, ri := range target {
+	for _, ri := range target.Items {
 		targetByARN[ri.ResourceARN] = ri
 	}
 
@@ -138,7 +148,7 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 	seen := map[string]struct{}{}
 	mark := struct{}{}
 	diffs := []core.ResourcesReportItemDifference{}
-	for _, ri := range latest {
+	for _, ri := range latest.Items {
 		seen[ri.ResourceARN] = mark
 		if ti, ok := targetByARN[ri.ResourceARN]; !ok {
 			diffs = append(diffs, ri.AddedDiff())
@@ -146,7 +156,7 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 			diffs = append(diffs, ri.Diff(ti))
 		}
 	}
-	for _, ri := range target {
+	for _, ri := range target.Items {
 		if _, ok := seen[ri.ResourceARN]; !ok {
 			diffs = append(diffs, ri.DeletedDiff())
 		}

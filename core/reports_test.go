@@ -35,7 +35,7 @@ func TestResourcesReportItemEquivalent(t *testing.T) {
 	}
 }
 
-func TestDecodeResourcesReportItem(t *testing.T) {
+func TestUnmarshalResourcesReportItem(t *testing.T) {
 	// 2021-06-11T20:54:08.112773+00:00,AccountAdminAccessRole-Sandbox,arn:aws:iam::139710491120:role/AccountAdminAccessRole-Sandbox,IAMRole,,,,,,,{}
 	// validTime, _ := time.Parse(time.RFC3339Nano, `2021-06-11T20:54:08.112773+00:00`)
 	cases := map[string]struct {
@@ -74,7 +74,7 @@ func TestDecodeResourcesReportItem(t *testing.T) {
 		},
 	}
 	for l, c := range cases {
-		o, err := DecodeResourcesReportItem(c.Fields)
+		o, err := UnmarshalResourcesReportItem(c.Fields)
 		if !c.Expected.Equivalent(o) {
 			t.Errorf("Case: %v, output does not match expectation %v vs %v", l, o, c.Expected)
 		}

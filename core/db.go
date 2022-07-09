@@ -66,7 +66,7 @@ func (db *DB) Sizes() (total int, accounts int, customers int) {
 	return
 }
 
-func (db *DB) GetPathForCustomerAccountTimeKind(customerID, accountID string, ts time.Time, kind string) *string {
+func (db *DB) GetPathForCustomerAccountTimeKind(customerID, accountID string, ts *time.Time, kind string) *string {
 	var (
 		customer Customer
 		account  Account
@@ -80,30 +80,11 @@ func (db *DB) GetPathForCustomerAccountTimeKind(customerID, accountID string, ts
 	if account, ok = customer.Accounts[accountID]; !ok {
 		return nil
 	}
-	if report, ok = account.Reports[ts.Truncate(24*time.Hour)]; !ok {
+	if ts == nil {
+		report = account.Latest()
+	} else if report, ok = account.Reports[ts.Truncate(24*time.Hour)]; !ok {
 		return nil
 	}
-	if path, ok = report.pathByKind[kind]; !ok {
-		return nil
-	}
-	return &path
-}
-
-func (db *DB) GetPathForCustomerAccountLatestKind(customerID, accountID, kind string) *string {
-	var (
-		customer Customer
-		account  Account
-		report   LocalReport
-		path     string
-		ok       bool
-	)
-	if customer, ok = db.Customers[customerID]; !ok {
-		return nil
-	}
-	if account, ok = customer.Accounts[accountID]; !ok {
-		return nil
-	}
-	report = account.Latest()
 	if path, ok = report.pathByKind[kind]; !ok {
 		return nil
 	}

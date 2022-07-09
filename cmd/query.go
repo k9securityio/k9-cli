@@ -18,21 +18,26 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
-	//"github.com/spf13/viper"
+	"github.com/spf13/viper"
 )
 
 // queryCmd represents the query command
 var queryCmd = &cobra.Command{
 	Use:   "query",
 	Short: "Lookup the effect of last scanned access control configuration by kind",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Please specify a target to query")
-	},
 }
 
 func init() {
 	rootCmd.AddCommand(queryCmd)
+
+	queryCmd.PersistentFlags().String(FLAG_ANALYSIS_DATE, ``, `Use snapshot from the specified date in YYYY-MM-DD (required)`)
+
+	queryCmd.PersistentFlags().String(FLAG_FORMAT, `json`, `Output format [csv|json] (default: json)`)
+	viper.BindPFlag(`query_format`, queryResourceCmd.Flags().Lookup(FLAG_FORMAT))
+
+	queryCmd.PersistentFlags().String(FLAG_CUSTOMER_ID, ``, `K9 customer ID for analysis (required)`)
+	queryCmd.MarkPersistentFlagRequired(FLAG_CUSTOMER_ID)
+	queryCmd.PersistentFlags().String(FLAG_ACCOUNT, ``, `AWS account ID for analysis (required)`)
+	queryCmd.MarkPersistentFlagRequired(FLAG_ACCOUNT)
 }

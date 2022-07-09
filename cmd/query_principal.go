@@ -19,25 +19,127 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"time"
 
+	"github.com/k9securityio/k9-cli/core"
+	"github.com/k9securityio/k9-cli/views"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // queryPrincipalCmd represents the principal command
 var queryPrincipalCmd = &cobra.Command{
-	Use:   "principal",
-	Short: "Lookup one or more principals",
+	Use:     "principal",
+	Aliases: []string{"principals"},
+	Short:   "Lookup one or more principals",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("principal called")
+		verbose, _ := cmd.Flags().GetBool(FLAG_VERBOSE)
+		format, _ := cmd.Flags().GetString(FLAG_FORMAT)
+		customerID, _ := cmd.Flags().GetString(FLAG_CUSTOMER_ID)
+		accountID, _ := cmd.Flags().GetString(FLAG_ACCOUNT)
+		analysisDate, _ := cmd.Flags().GetString(FLAG_ANALYSIS_DATE)
+		reportHome, _ := cmd.Flags().GetString(FLAG_REPORT_HOME)
+		stdout := cmd.OutOrStdout()
+		stderr := cmd.ErrOrStderr()
+		arns, _ := cmd.Flags().GetStringSlice(FLAG_ARNS)
+		names, _ := cmd.Flags().GetStringSlice(FLAG_NAMES)
+		principalsFilter := map[string]bool{}
+
+		var reportDateTime *time.Time
+		if len(analysisDate) > 0 {
+			td, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
+			if err != nil {
+				fmt.Fprintf(stderr, "invalid analysis-date: %v\n", analysisDate)
+				os.Exit(1)
+				return
+			}
+			reportDateTime = &td
+		}
+
+		for _, p := range arns {
+			principalsFilter[p] = true
+		}
+		for _, p := range names {
+			principalsFilter[p] = true
+		}
+
+		DoQueryPrincipal(stdout, stderr,
+			reportHome, customerID, accountID, format,
+			reportDateTime,
+			verbose,
+			principalsFilter)
+
 	},
 }
 
 func init() {
 	queryCmd.AddCommand(queryPrincipalCmd)
 
-	queryPrincipalCmd.Flags().String("format", `json`, `Output format [csv|json] (default: json)`)
-	viper.BindPFlag(`query_format`, queryPrincipalCmd.Flags().Lookup(`format`))
+	queryPrincipalCmd.Flags().StringSlice(FLAG_ARNS, []string{}, `A list of principal ARNs to retrieve`)
+	queryPrincipalCmd.Flags().StringSlice(FLAG_NAMES, []string{}, `A list of principal names to retrieve`)
+}
 
-	queryPrincipalCmd.Flags().StringArray("principal", []string{}, `A list of principals to include`)
+// DoQueryPrincipal is the high-level query and filtering logic for querying principal reports. Externalized for testability.
+func DoQueryPrincipal(stdout, stderr io.Writer,
+	reportHome, customerID, accountID, format string,
+	analysisDate *time.Time,
+	verbose bool,
+	principals map[string]bool) {
+
+	// load the local report database
+	db, err := core.LoadLocalDB(reportHome)
+	if err != nil {
+		fmt.Fprintf(stderr, "Unable to load local database, %v\n", err)
+		os.Exit(1)
+		return
+	}
+
+	if verbose {
+		defer DumpDBStats(stderr, &db)
+	}
+
+	// determine the file name for the desired report
+	path := db.GetPathForCustomerAccountTimeKind(customerID, accountID, analysisDate, core.REPORT_TYPE_PREFIX_PRINCIPALS)
+	if path == nil || len(*path) <= 0 {
+		fmt.Fprintf(stderr, "No report found for customer: %v account: %v date: %v\n", customerID, accountID, analysisDate)
+		os.Exit(1)
+	}
+
+	// get the report
+	lf, err := os.Open(*path)
+	if err != nil {
+		fmt.Fprintf(stderr, "Unable to open the requested report: %v\n", err)
+		os.Exit(1)
+		return
+	}
+	report := &core.PrincipalsReport{}
+	err = core.LoadReport(lf, report)
+	if err != nil {
+		fmt.Fprintf(stderr, "Unable to open the requested report: %v\n", err)
+		os.Exit(1)
+		return
+	}
+
+	if verbose {
+		fmt.Fprintf(stderr, "Target Analysis: %v, records: %v\n", analysisDate, len(report.Items))
+	}
+
+	if len(principals) <= 0 {
+		views.Display(stdout, stderr, format, report.Items)
+		return
+	}
+
+	results := []core.PrincipalsReportItem{}
+	for _, ri := range report.Items {
+		if _, ok := principals[ri.PrincipalARN]; ok {
+			results = append(results, ri)
+			continue
+		}
+		if _, ok := principals[ri.PrincipalName]; ok {
+			results = append(results, ri)
+			continue
+		}
+	}
+	views.Display(stdout, stderr, format, results)
 }

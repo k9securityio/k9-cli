@@ -99,73 +99,19 @@ func (r Report) reportS3ObjectKey(name string) string {
 		r.Timestamp.Format(FILENAME_TIMESTAMP_LAYOUT))
 }
 
-// LoadResourcesReport reads CSV from the provided reader.
-func LoadResourcesReport(in io.Reader) ([]ResourcesReportItem, error) {
-	ts := []ResourcesReportItem{}
-	if in == nil {
-		return ts, &IllegalArgumentError{`in`, `invalid input`}
-	}
-
-	rr := csv.NewReader(in)
-	records, err := rr.ReadAll()
-	if err != nil {
-		return ts, err
-	}
-
-	for i, v := range records {
-		// skip the header row
-		if i == 0 {
-			continue
-		}
-		ri, err := DecodeResourcesReportItem(v)
-		if err != nil {
-			return ts, err
-		}
-		ts = append(ts, ri)
-	}
-	return ts, nil
-}
-
-// LoadPrincipalsReport reads CSV from the provided reader.
-func LoadPrincipalsReport(in io.Reader) ([]PrincipalsReportItem, error) {
-	ts := []PrincipalsReportItem{}
-	if in == nil {
-		return ts, &IllegalArgumentError{`in`, `invalid input`}
-	}
-
-	rr := csv.NewReader(in)
-	records, err := rr.ReadAll()
-	if err != nil {
-		return ts, err
-	}
-
-	for i, v := range records {
-		// skip the header row
-		if i == 0 {
-			continue
-		}
-		ri, err := DecodePrincipalsReportItem(v)
-		if err != nil {
-			return ts, err
-		}
-		ts = append(ts, ri)
-	}
-	return ts, nil
-}
-
 type ResourcesReportItem struct {
-	AnalysisTime time.Time
-	ResourceName string
-	ResourceARN  string
-	ResourceType string
+	AnalysisTime time.Time `csv:"analysis_time" json:"analysis_time"`
+	ResourceName string    `csv:"resource_name" json:"resource_name"`
+	ResourceARN  string    `csv:"resource_arn" json:"resource_arn"`
+	ResourceType string    `csv:"resource_type" json:"resource_type"`
 
-	ResourceTagBusinessUnit    string
-	ResourceTagEnvironment     string
-	ResourceTagOwner           string
-	ResourceTagConfidentiality string
-	ResourceTagIntegrity       string
-	ResourceTagAvailability    string
-	ResourceTags               string
+	ResourceTagBusinessUnit    string `csv:"resource_tag_business_unit" json:"resource_tag_business_unit"`
+	ResourceTagEnvironment     string `csv:"resource_tag_environment" json:"resource_tag_environment"`
+	ResourceTagOwner           string `csv:"resource_tag_owner" json:"resource_tag_owner"`
+	ResourceTagConfidentiality string `csv:"resource_tag_confidentiality" json:"resource_tag_confidentiality"`
+	ResourceTagIntegrity       string `csv:"resource_tag_integrity" json:"resource_tag_integrity"`
+	ResourceTagAvailability    string `csv:"resource_tag_availability" json:"resource_tag_availability"`
+	ResourceTags               string `csv:"resource_tags" json:"resource_tags"`
 }
 
 func (i ResourcesReportItem) Equivalent(t ResourcesReportItem) bool {
@@ -184,7 +130,7 @@ func (i ResourcesReportItem) Equivalent(t ResourcesReportItem) bool {
 	return true
 }
 
-func DecodeResourcesReportItem(in []string) (o ResourcesReportItem, err error) {
+func UnmarshalResourcesReportItem(in []string) (o ResourcesReportItem, err error) {
 	if len(in) != 11 {
 		err = fmt.Errorf(`invalid Resources Report Item record length`)
 		return
@@ -204,19 +150,6 @@ func DecodeResourcesReportItem(in []string) (o ResourcesReportItem, err error) {
 	o.ResourceTagAvailability = in[9]
 	o.ResourceTags = in[10]
 	return
-}
-
-type ResourceAccessSummaryReportItem struct {
-	AnalysisTime     time.Time
-	ServiceName      string
-	ResourceName     string
-	ResourceARN      string
-	AccessCapability string
-	PrincipalType    string
-	PrincipalName    string
-	PrincipalARN     string
-
-	ResourceTagConfidentiality string
 }
 
 type PrincipalsReportItem struct {
@@ -268,9 +201,9 @@ func (i PrincipalsReportItem) Equivalent(t PrincipalsReportItem) bool {
 	return true
 }
 
-func DecodePrincipalsReportItem(in []string) (o PrincipalsReportItem, err error) {
+func UnmarshalPrincipalsReportItem(in []string) (o PrincipalsReportItem, err error) {
 	if len(in) != 19 {
-		err = &IllegalArgumentError{`in`, `invalid PrincipalReportItem entry`}
+		err = &IllegalArgumentError{`in`, `invalid PrincipalsReportItem entry`}
 		return
 	}
 	o.AnalysisTime, err = time.Parse(time.RFC3339Nano, in[0])
@@ -299,12 +232,196 @@ func DecodePrincipalsReportItem(in []string) (o PrincipalsReportItem, err error)
 }
 
 type PrincipalAccessSummaryReportItem struct {
-	AnalysisTime     time.Time
-	PrincipalName    string
-	PrincipalARN     string
-	PrincipalType    string
-	PrincipalTags    string
-	ServiceName      string
-	AccessCapability string
-	ResourceARN      string
+	AnalysisTime     time.Time `csv:"analysis_time" json:"analysis_time"`
+	PrincipalName    string    `csv:"principal_name" json:"principal_name"`
+	PrincipalARN     string    `csv:"principal_arn" json:"principal_arn"`
+	PrincipalType    string    `csv:"principal_type" json:"principal_type"`
+	PrincipalTags    string    `csv:"principal_tags" json:"principal_tags"`
+	ServiceName      string    `csv:"service_name" json:"service_name"`
+	AccessCapability string    `csv:"access_capability" json:"access_capability"`
+	ResourceARN      string    `csv:"resource_arn" json:"resource_arn"`
+}
+
+func (i PrincipalAccessSummaryReportItem) Equivalent(t PrincipalAccessSummaryReportItem) bool {
+	if i.PrincipalName != t.PrincipalName ||
+		i.PrincipalARN != t.PrincipalARN ||
+		i.PrincipalType != t.PrincipalType ||
+		i.PrincipalTags != t.PrincipalTags ||
+		i.ServiceName != t.ServiceName ||
+		i.AccessCapability != t.AccessCapability ||
+		i.ResourceARN != t.ResourceARN {
+		return false
+	}
+	return true
+}
+
+func UnmarshalPrincipalAccessSummaryReportItem(in []string) (o PrincipalAccessSummaryReportItem, err error) {
+	if len(in) != 8 {
+		err = &IllegalArgumentError{`in`, `invalid PrincipalAccessReportItem entry`}
+		return
+	}
+	o.AnalysisTime, err = time.Parse(time.RFC3339Nano, in[0])
+	if err != nil {
+		return
+	}
+	o.PrincipalName = in[1]
+	o.PrincipalARN = in[2]
+	o.PrincipalType = in[3]
+	o.PrincipalTags = in[4]
+	o.ServiceName = in[5]
+	o.AccessCapability = in[6]
+	o.ResourceARN = in[7]
+	return
+}
+
+type ResourceAccessSummaryReportItem struct {
+	AnalysisTime     time.Time `csv:"analysis_time" json:"analysis_time"`
+	ServiceName      string    `csv:"service_name" json:"service_name"`
+	ResourceName     string    `csv:"resource_name" json:"resource_name"`
+	ResourceARN      string    `csv:"resource_arn" json:"resource_arn"`
+	AccessCapability string    `csv:"access_capability" json:"access_capability"`
+	PrincipalType    string    `csv:"principal_type" json:"principal_type"`
+	PrincipalName    string    `csv:"principal_name" json:"principal_name"`
+	PrincipalARN     string    `csv:"principal_arn" json:"principal_arn"`
+
+	ResourceTagConfidentiality string `csv:"resource_tag_confidentiality" json:"resource_tag_confidentiality"`
+}
+
+func (i ResourceAccessSummaryReportItem) Equivalent(t ResourceAccessSummaryReportItem) bool {
+	if i.PrincipalName != t.PrincipalName ||
+		i.PrincipalARN != t.PrincipalARN ||
+		i.PrincipalType != t.PrincipalType ||
+		i.ServiceName != t.ServiceName ||
+		i.AccessCapability != t.AccessCapability ||
+		i.ResourceName != t.ResourceName ||
+		i.ResourceARN != t.ResourceARN ||
+		i.ResourceTagConfidentiality != t.ResourceTagConfidentiality {
+		return false
+	}
+	return true
+}
+
+func UnmarshalResourceAccessSummaryReportItem(in []string) (o ResourceAccessSummaryReportItem, err error) {
+	if len(in) != 9 {
+		err = &IllegalArgumentError{`in`, `invalid ResourceAccessReportItem entry`}
+		return
+	}
+	o.AnalysisTime, err = time.Parse(time.RFC3339Nano, in[0])
+	if err != nil {
+		return
+	}
+	o.ServiceName = in[1]
+	o.ResourceName = in[2]
+	o.ResourceARN = in[3]
+	o.AccessCapability = in[4]
+	o.PrincipalType = in[5]
+	o.PrincipalName = in[6]
+	o.PrincipalARN = in[7]
+	o.ResourceTagConfidentiality = in[8]
+	return
+}
+
+// LoadReport reads all records from the provided Reader as CSV and aggregates those records using
+// the provided Collector.
+func LoadReport(in io.Reader, c Collector) error {
+	rr := csv.NewReader(in)
+	records, err := rr.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	for i, v := range records {
+		// skip the header row
+		if i == 0 {
+			continue
+		}
+		if err := c.Collect(v); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Collector describes record-aggregating recievers. A Collector implementation should collect a
+// specific type of record. For example a ResourceAccessSummaryReport is a Collector that will
+// attempt to parse a ResourceAccessSummaryReportItem from the provided string slice and append
+// that record to the report's internal aggregation.
+type Collector interface {
+	Collect(in []string) error
+}
+
+// ResourceAccessSummaryReport is a ResourceAccessSummaryReportItem collector.
+type ResourceAccessSummaryReport struct {
+	Items []ResourceAccessSummaryReportItem
+}
+
+// Collect will attempt to parse a ResourceAccessSummaryReportItem and append it to the
+// ResourceAccessSummaryReport internal aggregation.
+func (r *ResourceAccessSummaryReport) Collect(in []string) error {
+	if r.Items == nil {
+		r.Items = []ResourceAccessSummaryReportItem{}
+	}
+	ri, err := UnmarshalResourceAccessSummaryReportItem(in)
+	if err != nil {
+		return err
+	}
+	r.Items = append(r.Items, ri)
+	return nil
+}
+
+// PrincipalAccessSummaryReport is a PrincipalAccessSummaryReportItem collector.
+type PrincipalAccessSummaryReport struct {
+	Items []PrincipalAccessSummaryReportItem
+}
+
+// Collect will attempt to parse a PrincipalAccessSummaryReportItem and append it to the
+// PrincipalAccessSummaryReport internal aggregation.
+func (r *PrincipalAccessSummaryReport) Collect(in []string) error {
+	if r.Items == nil {
+		r.Items = []PrincipalAccessSummaryReportItem{}
+	}
+	ri, err := UnmarshalPrincipalAccessSummaryReportItem(in)
+	if err != nil {
+		return err
+	}
+	r.Items = append(r.Items, ri)
+	return nil
+}
+
+// PrincipalReport is a PrincipalReportItem collector.
+type PrincipalsReport struct {
+	Items []PrincipalsReportItem
+}
+
+// Collect will attempt to parse a PrincipalReportItem and append it to the
+// PrincipalReport internal aggregation.
+func (r *PrincipalsReport) Collect(in []string) error {
+	if r.Items == nil {
+		r.Items = []PrincipalsReportItem{}
+	}
+	ri, err := UnmarshalPrincipalsReportItem(in)
+	if err != nil {
+		return err
+	}
+	r.Items = append(r.Items, ri)
+	return nil
+}
+
+// ResourceReport is a ResourceReportItem collector.
+type ResourcesReport struct {
+	Items []ResourcesReportItem
+}
+
+// Collect will attempt to parse a ResourceReportItem and append it to the
+// ResourceReport internal aggregation.
+func (r *ResourcesReport) Collect(in []string) error {
+	if r.Items == nil {
+		r.Items = []ResourcesReportItem{}
+	}
+	ri, err := UnmarshalResourcesReportItem(in)
+	if err != nil {
+		return err
+	}
+	r.Items = append(r.Items, ri)
+	return nil
 }

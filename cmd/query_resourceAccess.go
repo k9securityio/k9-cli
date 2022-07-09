@@ -88,12 +88,7 @@ func DoQueryResourceAccessSummary(stdout, stderr io.Writer,
 	}
 
 	if verbose {
-		defer func() {
-			total, accounts, customers := db.Sizes()
-			fmt.Fprintf(stderr,
-				"Local database:\n\tCustomers:\t\t%v\n\tAccounts:\t\t%v\n\tTotal analysis dates\t%v\n",
-				customers, accounts, total)
-		}()
+		defer DumpDBStats(db)
 	}
 
 	// determine the file name for the desired report

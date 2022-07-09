@@ -53,7 +53,6 @@ var syncCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(stderr, "Error retrieving AWS configuration: %v+\n", err)
 			os.Exit(1)
-			return
 		}
 
 		selector := []string{core.EXT_CSV}
@@ -64,7 +63,6 @@ var syncCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(stderr, "Error loading remote database: %v+\n", err)
 			os.Exit(1)
-			return
 		}
 
 		err = core.Sync(stdout, stderr, s3db,

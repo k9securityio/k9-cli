@@ -44,14 +44,12 @@ var diffPrincipalsCmd = &cobra.Command{
 		if len(analysisDate) <= 0 {
 			fmt.Fprintln(stderr, `an analysis-date is required for comparison`)
 			os.Exit(1)
-			return
 		}
 
 		reportDateTime, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
 		if err != nil {
 			fmt.Fprintf(stderr, "invalid analysis-date: %v\n", analysisDate)
 			os.Exit(1)
-			return
 		}
 
 		DoDiffPrincipals(stdout, stderr, reportHome, customerID, accountID, reportDateTime, verbose)
@@ -83,7 +81,6 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 			"No such latest report: %v, %v, total records: %v\n",
 			customerID, accountID, db.Size())
 		os.Exit(1)
-		return
 	}
 
 	// get the target analysis
@@ -99,7 +96,6 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 			analysisDate.Format(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT),
 			db.Size())
 		os.Exit(1)
-		return
 	}
 
 	// open and load the reports
@@ -107,13 +103,11 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the latest report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 	tf, err := os.Open(targetReportPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the target report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	latest := &core.PrincipalsReport{}
@@ -121,14 +115,12 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the latest report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 	target := &core.PrincipalsReport{}
 	err = core.LoadReport(tf, target)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the target report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	if verbose {

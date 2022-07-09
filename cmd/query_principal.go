@@ -52,7 +52,6 @@ var queryPrincipalCmd = &cobra.Command{
 			if err != nil {
 				fmt.Fprintf(stderr, "invalid analysis-date: %v\n", analysisDate)
 				os.Exit(1)
-				return
 			}
 			reportDateTime = &td
 		}
@@ -92,7 +91,6 @@ func DoQueryPrincipal(stdout, stderr io.Writer,
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to load local database, %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	if verbose {
@@ -111,14 +109,12 @@ func DoQueryPrincipal(stdout, stderr io.Writer,
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the requested report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 	report := &core.PrincipalsReport{}
 	err = core.LoadReport(lf, report)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the requested report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	if verbose {

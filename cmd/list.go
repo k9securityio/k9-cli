@@ -40,7 +40,6 @@ var listCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(cmd.ErrOrStderr(), "Error retrieving AWS configuration: %v+\n", err)
 			os.Exit(1)
-			return
 		}
 		err = core.List(
 			os.Stdout,

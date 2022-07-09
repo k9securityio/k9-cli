@@ -67,7 +67,6 @@ func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, custo
 	if err != nil {
 		fmt.Printf("Unable to load local database, %v\n", err)
 		os.Exit(1)
-		return
 	}
 	if verbose {
 		defer DumpDBStats(stderr, &db)
@@ -78,14 +77,12 @@ func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, custo
 	if path == nil || len(*path) <= 0 {
 		fmt.Fprintf(stderr, "No report found for customer: %v account: %v date: %v\n", customerID, accountID, analysisDate)
 		os.Exit(1)
-		return
 	}
 
 	f, err := os.Open(*path)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the specified report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	// Open and load the report
@@ -94,7 +91,6 @@ func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, custo
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to analyze the specified report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	// reducer - apply filtering or detective logic

@@ -44,7 +44,6 @@ var diffResourcesCmd = &cobra.Command{
 		if len(analysisDate) <= 0 {
 			fmt.Fprintln(stderr, `an analysis-date is required for comparison`)
 			os.Exit(1)
-			return
 		}
 
 		td, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
@@ -82,7 +81,6 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 			"No such latest report: %v, %v, total records: %v\n",
 			customerID, accountID, db.Size())
 		os.Exit(1)
-		return
 	}
 
 	// get the target analysis
@@ -98,7 +96,6 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 			analysisDate.Format(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT),
 			db.Size())
 		os.Exit(1)
-		return
 	}
 
 	// open and load the reports
@@ -106,13 +103,11 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the latest report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 	tf, err := os.Open(targetReportPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the target report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	latest := &core.ResourcesReport{}
@@ -120,14 +115,12 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the latest report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 	target := &core.ResourcesReport{}
 	err = core.LoadReport(tf, target)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the target report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	if verbose {

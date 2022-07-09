@@ -52,7 +52,6 @@ var queryResourceAccessCmd = &cobra.Command{
 			if err != nil {
 				fmt.Fprintf(stderr, "invalid analysis-date: %v\n", analysisDate)
 				os.Exit(1)
-				return
 			}
 			reportDateTime = &td
 		}
@@ -91,7 +90,6 @@ func DoQueryResourceAccessSummary(stdout, stderr io.Writer,
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to load local database, %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	if verbose {
@@ -103,7 +101,6 @@ func DoQueryResourceAccessSummary(stdout, stderr io.Writer,
 	if path == nil || len(*path) <= 0 {
 		fmt.Fprintf(stderr, "No report found for customer: %v account: %v date: %v\n", customerID, accountID, analysisDate)
 		os.Exit(1)
-		return
 	}
 
 	// get the report
@@ -111,14 +108,12 @@ func DoQueryResourceAccessSummary(stdout, stderr io.Writer,
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the requested report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 	report := &core.ResourceAccessSummaryReport{}
 	err = core.LoadReport(lf, report)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the requested report: %v\n", err)
 		os.Exit(1)
-		return
 	}
 
 	if verbose {

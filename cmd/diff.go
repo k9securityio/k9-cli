@@ -18,8 +18,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -28,9 +26,6 @@ import (
 var diffCmd = &cobra.Command{
 	Use:   "diff",
 	Short: `Calculate the difference between a snapshot and last scan`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("diff called")
-	},
 }
 
 // init defines and wires flags

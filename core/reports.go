@@ -388,14 +388,21 @@ func loadReport(in io.Reader, c Collector) error {
 	return nil
 }
 
+// Collector describes record-aggregating recievers. A Collector implementation should collect a
+// specific type of record. For example a ResourceAccessSummaryReport is a Collector that will
+// attempt to parse a ResourceAccessSummaryReportItem from the provided string slice and append
+// that record to the report's internal aggregation.
 type Collector interface {
 	Collect(in []string) error
 }
 
+// ResourceAccessSummaryReport is a ResourceAccessSummaryReportItem collector.
 type ResourceAccessSummaryReport struct {
 	Items []ResourceAccessSummaryReportItem
 }
 
+// Collect will attempt to parse a ResourceAccessSummaryReportItem and append it to the
+// ResourceAccessSummaryReport internal aggregation.
 func (r *ResourceAccessSummaryReport) Collect(in []string) error {
 	ri, err := DecodeResourceAccessSummaryReportItem(in)
 	if err != nil {
@@ -405,10 +412,13 @@ func (r *ResourceAccessSummaryReport) Collect(in []string) error {
 	return nil
 }
 
+// PrincipalAccessSummaryReport is a PrincipalAccessSummaryReportItem collector.
 type PrincipalAccessSummaryReport struct {
 	Items []PrincipalAccessSummaryReportItem
 }
 
+// Collect will attempt to parse a PrincipalAccessSummaryReportItem and append it to the
+// PrincipalAccessSummaryReport internal aggregation.
 func (r *PrincipalAccessSummaryReport) Collect(in []string) error {
 	ri, err := DecodePrincipalAccessSummaryReportItem(in)
 	if err != nil {
@@ -418,10 +428,13 @@ func (r *PrincipalAccessSummaryReport) Collect(in []string) error {
 	return nil
 }
 
+// PrincipalReport is a PrincipalReportItem collector.
 type PrincipalsReport struct {
 	Items []PrincipalsReportItem
 }
 
+// Collect will attempt to parse a PrincipalReportItem and append it to the
+// PrincipalReport internal aggregation.
 func (r *PrincipalsReport) Collect(in []string) error {
 	ri, err := DecodePrincipalsReportItem(in)
 	if err != nil {
@@ -431,10 +444,13 @@ func (r *PrincipalsReport) Collect(in []string) error {
 	return nil
 }
 
+// ResourceReport is a ResourceReportItem collector.
 type ResourcesReport struct {
 	Items []ResourcesReportItem
 }
 
+// Collect will attempt to parse a ResourceReportItem and append it to the
+// ResourceReport internal aggregation.
 func (r *ResourcesReport) Collect(in []string) error {
 	ri, err := DecodeResourcesReportItem(in)
 	if err != nil {

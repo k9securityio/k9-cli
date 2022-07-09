@@ -74,6 +74,7 @@ func init() {
 	queryPrincipalCmd.Flags().StringSlice(FLAG_NAMES, []string{}, `A list of principal names to retrieve`)
 }
 
+// DoQueryPrincipal is the high-level query and filtering logic for querying principal reports. Externalized for testability.
 func DoQueryPrincipal(stdout, stderr io.Writer,
 	reportHome, customerID, accountID, analysisDate, format string,
 	verbose bool,

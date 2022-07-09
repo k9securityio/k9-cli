@@ -73,6 +73,7 @@ func init() {
 	queryResourceAccessCmd.Flags().StringSlice(FLAG_NAMES, []string{}, `A list of resource names to retrieve`)
 }
 
+// DoQueryResourceAccessSummary is the high-level query and filtering logic for querying resource-access reports. Externalized for testability.
 func DoQueryResourceAccessSummary(stdout, stderr io.Writer,
 	reportHome, customerID, accountID, analysisDate, format string,
 	verbose bool,

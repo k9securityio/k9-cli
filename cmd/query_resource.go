@@ -74,6 +74,7 @@ func init() {
 	queryResourceCmd.Flags().StringSlice(FLAG_NAMES, []string{}, `A list of resource names to retrieve`)
 }
 
+// DoQueryResource is the high-level query and filtering logic for querying resource reports. Externalized for testability.
 func DoQueryResource(stdout, stderr io.Writer,
 	reportHome, customerID, accountID, analysisDate, format string,
 	verbose bool,

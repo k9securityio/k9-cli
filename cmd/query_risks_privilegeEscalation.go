@@ -89,7 +89,8 @@ func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, custo
 	}
 
 	// Open and load the report
-	records, err := core.LoadPrincipalsReport(f)
+	records := &core.PrincipalsReport{}
+	err = core.LoadReport(f, records)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to analyze the specified report: %v\n", err)
 		os.Exit(1)
@@ -98,7 +99,7 @@ func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, custo
 
 	// reducer - apply filtering or detective logic
 	output := []core.PrincipalsReportItem{}
-	for _, r := range records {
+	for _, r := range records.Items {
 		if r.PrincipalIsIAMAdmin {
 			output = append(output, r)
 		}

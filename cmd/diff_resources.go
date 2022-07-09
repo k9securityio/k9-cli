@@ -115,13 +115,15 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 		return
 	}
 
-	latest, err := core.LoadResourcesReport(lf)
+	latest := &core.ResourcesReport{}
+	err = core.LoadReport(lf, latest)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the latest report: %v\n", err)
 		os.Exit(1)
 		return
 	}
-	target, err := core.LoadResourcesReport(tf)
+	target := &core.ResourcesReport{}
+	err = core.LoadReport(tf, target)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the target report: %v\n", err)
 		os.Exit(1)
@@ -131,12 +133,12 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 	if verbose {
 		fmt.Fprintf(stderr,
 			"Target Analysis: %v, records: %v\nLatest Analysis: %v, records: %v\n",
-			analysisDate, len(latest), latest[0].AnalysisTime, len(target))
+			analysisDate, len(latest.Items), latest.Items[0].AnalysisTime, len(target.Items))
 	}
 
 	// index on principal ARN for each ReportItem
 	targetByARN := map[string]core.ResourcesReportItem{}
-	for _, ri := range target {
+	for _, ri := range target.Items {
 		targetByARN[ri.ResourceARN] = ri
 	}
 
@@ -146,7 +148,7 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 	seen := map[string]struct{}{}
 	mark := struct{}{}
 	diffs := []core.ResourcesReportItemDifference{}
-	for _, ri := range latest {
+	for _, ri := range latest.Items {
 		seen[ri.ResourceARN] = mark
 		if ti, ok := targetByARN[ri.ResourceARN]; !ok {
 			diffs = append(diffs, ri.AddedDiff())
@@ -154,7 +156,7 @@ func DoDiffResources(stdout, stderr io.Writer, reportHome, customerID, accountID
 			diffs = append(diffs, ri.Diff(ti))
 		}
 	}
-	for _, ri := range target {
+	for _, ri := range target.Items {
 		if _, ok := seen[ri.ResourceARN]; !ok {
 			diffs = append(diffs, ri.DeletedDiff())
 		}

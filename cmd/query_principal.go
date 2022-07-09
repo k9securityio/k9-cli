@@ -113,7 +113,8 @@ func DoQueryPrincipal(stdout, stderr io.Writer,
 		os.Exit(1)
 		return
 	}
-	report, err := core.LoadPrincipalsReport(lf)
+	report := &core.PrincipalsReport{}
+	err = core.LoadReport(lf, report)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the requested report: %v\n", err)
 		os.Exit(1)
@@ -121,16 +122,16 @@ func DoQueryPrincipal(stdout, stderr io.Writer,
 	}
 
 	if verbose {
-		fmt.Fprintf(stderr, "Target Analysis: %v, records: %v\n", analysisDate, len(report))
+		fmt.Fprintf(stderr, "Target Analysis: %v, records: %v\n", analysisDate, len(report.Items))
 	}
 
 	if len(principals) <= 0 {
-		views.Display(stdout, stderr, format, report)
+		views.Display(stdout, stderr, format, report.Items)
 		return
 	}
 
 	results := []core.PrincipalsReportItem{}
-	for _, ri := range report {
+	for _, ri := range report.Items {
 		if _, ok := principals[ri.PrincipalARN]; ok {
 			results = append(results, ri)
 			continue

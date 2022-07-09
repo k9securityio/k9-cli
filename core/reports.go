@@ -99,54 +99,6 @@ func (r Report) reportS3ObjectKey(name string) string {
 		r.Timestamp.Format(FILENAME_TIMESTAMP_LAYOUT))
 }
 
-// LoadResourcesReport reads CSV from the provided reader.
-func LoadResourcesReport(in io.Reader) ([]ResourcesReportItem, error) {
-	ts := []ResourcesReportItem{}
-	if in == nil {
-		return ts, &IllegalArgumentError{`in`, `invalid input`}
-	}
-
-	collector := &ResourcesReport{Items: []ResourcesReportItem{}}
-	err := loadReport(in, collector)
-	return collector.Items, err
-}
-
-// LoadPrincipalsReport reads CSV from the provided reader.
-func LoadPrincipalsReport(in io.Reader) ([]PrincipalsReportItem, error) {
-	ts := []PrincipalsReportItem{}
-	if in == nil {
-		return ts, &IllegalArgumentError{`in`, `invalid input`}
-	}
-
-	collector := &PrincipalsReport{Items: []PrincipalsReportItem{}}
-	err := loadReport(in, collector)
-	return collector.Items, err
-}
-
-// LoadPrincipalAccessSummaryReport reads CSV from the provided reader.
-func LoadPrincipalAccessSummaryReport(in io.Reader) ([]PrincipalAccessSummaryReportItem, error) {
-	ts := []PrincipalAccessSummaryReportItem{}
-	if in == nil {
-		return ts, &IllegalArgumentError{`in`, `invalid input`}
-	}
-
-	collector := &PrincipalAccessSummaryReport{Items: []PrincipalAccessSummaryReportItem{}}
-	err := loadReport(in, collector)
-	return collector.Items, err
-}
-
-// LoadResourceAccessSummaryReport reads CSV from the provided reader.
-func LoadResourceAccessSummaryReport(in io.Reader) ([]ResourceAccessSummaryReportItem, error) {
-	ts := []ResourceAccessSummaryReportItem{}
-	if in == nil {
-		return ts, &IllegalArgumentError{`in`, `invalid input`}
-	}
-
-	collector := &ResourceAccessSummaryReport{Items: []ResourceAccessSummaryReportItem{}}
-	err := loadReport(in, collector)
-	return collector.Items, err
-}
-
 type ResourcesReportItem struct {
 	AnalysisTime time.Time `csv:"analysis_time" json:"analysis_time"`
 	ResourceName string    `csv:"resource_name" json:"resource_name"`
@@ -178,7 +130,7 @@ func (i ResourcesReportItem) Equivalent(t ResourcesReportItem) bool {
 	return true
 }
 
-func DecodeResourcesReportItem(in []string) (o ResourcesReportItem, err error) {
+func UnmarshalResourcesReportItem(in []string) (o ResourcesReportItem, err error) {
 	if len(in) != 11 {
 		err = fmt.Errorf(`invalid Resources Report Item record length`)
 		return
@@ -249,7 +201,7 @@ func (i PrincipalsReportItem) Equivalent(t PrincipalsReportItem) bool {
 	return true
 }
 
-func DecodePrincipalsReportItem(in []string) (o PrincipalsReportItem, err error) {
+func UnmarshalPrincipalsReportItem(in []string) (o PrincipalsReportItem, err error) {
 	if len(in) != 19 {
 		err = &IllegalArgumentError{`in`, `invalid PrincipalsReportItem entry`}
 		return
@@ -303,7 +255,7 @@ func (i PrincipalAccessSummaryReportItem) Equivalent(t PrincipalAccessSummaryRep
 	return true
 }
 
-func DecodePrincipalAccessSummaryReportItem(in []string) (o PrincipalAccessSummaryReportItem, err error) {
+func UnmarshalPrincipalAccessSummaryReportItem(in []string) (o PrincipalAccessSummaryReportItem, err error) {
 	if len(in) != 8 {
 		err = &IllegalArgumentError{`in`, `invalid PrincipalAccessReportItem entry`}
 		return
@@ -349,7 +301,7 @@ func (i ResourceAccessSummaryReportItem) Equivalent(t ResourceAccessSummaryRepor
 	return true
 }
 
-func DecodeResourceAccessSummaryReportItem(in []string) (o ResourceAccessSummaryReportItem, err error) {
+func UnmarshalResourceAccessSummaryReportItem(in []string) (o ResourceAccessSummaryReportItem, err error) {
 	if len(in) != 9 {
 		err = &IllegalArgumentError{`in`, `invalid ResourceAccessReportItem entry`}
 		return
@@ -369,7 +321,9 @@ func DecodeResourceAccessSummaryReportItem(in []string) (o ResourceAccessSummary
 	return
 }
 
-func loadReport(in io.Reader, c Collector) error {
+// LoadReport reads all records from the provided Reader as CSV and aggregates those records using
+// the provided Collector.
+func LoadReport(in io.Reader, c Collector) error {
 	rr := csv.NewReader(in)
 	records, err := rr.ReadAll()
 	if err != nil {
@@ -404,7 +358,10 @@ type ResourceAccessSummaryReport struct {
 // Collect will attempt to parse a ResourceAccessSummaryReportItem and append it to the
 // ResourceAccessSummaryReport internal aggregation.
 func (r *ResourceAccessSummaryReport) Collect(in []string) error {
-	ri, err := DecodeResourceAccessSummaryReportItem(in)
+	if r.Items == nil {
+		r.Items = []ResourceAccessSummaryReportItem{}
+	}
+	ri, err := UnmarshalResourceAccessSummaryReportItem(in)
 	if err != nil {
 		return err
 	}
@@ -420,7 +377,10 @@ type PrincipalAccessSummaryReport struct {
 // Collect will attempt to parse a PrincipalAccessSummaryReportItem and append it to the
 // PrincipalAccessSummaryReport internal aggregation.
 func (r *PrincipalAccessSummaryReport) Collect(in []string) error {
-	ri, err := DecodePrincipalAccessSummaryReportItem(in)
+	if r.Items == nil {
+		r.Items = []PrincipalAccessSummaryReportItem{}
+	}
+	ri, err := UnmarshalPrincipalAccessSummaryReportItem(in)
 	if err != nil {
 		return err
 	}
@@ -436,7 +396,10 @@ type PrincipalsReport struct {
 // Collect will attempt to parse a PrincipalReportItem and append it to the
 // PrincipalReport internal aggregation.
 func (r *PrincipalsReport) Collect(in []string) error {
-	ri, err := DecodePrincipalsReportItem(in)
+	if r.Items == nil {
+		r.Items = []PrincipalsReportItem{}
+	}
+	ri, err := UnmarshalPrincipalsReportItem(in)
 	if err != nil {
 		return err
 	}
@@ -452,7 +415,10 @@ type ResourcesReport struct {
 // Collect will attempt to parse a ResourceReportItem and append it to the
 // ResourceReport internal aggregation.
 func (r *ResourcesReport) Collect(in []string) error {
-	ri, err := DecodeResourcesReportItem(in)
+	if r.Items == nil {
+		r.Items = []ResourcesReportItem{}
+	}
+	ri, err := UnmarshalResourcesReportItem(in)
 	if err != nil {
 		return err
 	}

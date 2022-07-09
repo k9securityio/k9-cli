@@ -116,13 +116,15 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 		return
 	}
 
-	latest, err := core.LoadPrincipalsReport(lf)
+	latest := &core.PrincipalsReport{}
+	err = core.LoadReport(lf, latest)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the latest report: %v\n", err)
 		os.Exit(1)
 		return
 	}
-	target, err := core.LoadPrincipalsReport(tf)
+	target := &core.PrincipalsReport{}
+	err = core.LoadReport(tf, target)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the target report: %v\n", err)
 		os.Exit(1)
@@ -132,12 +134,12 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 	if verbose {
 		fmt.Fprintf(stderr,
 			"Target Analysis: %v, records: %v\nLatest Analysis: %v, records: %v\n",
-			analysisDate, len(latest), latest[0].AnalysisTime, len(target))
+			analysisDate, len(latest.Items), latest.Items[0].AnalysisTime, len(target.Items))
 	}
 
 	// index on principal ARN for each ReportItem
 	targetByARN := map[string]core.PrincipalsReportItem{}
-	for _, ri := range target {
+	for _, ri := range target.Items {
 		targetByARN[ri.PrincipalARN] = ri
 	}
 
@@ -147,7 +149,7 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 	seen := map[string]struct{}{}
 	mark := struct{}{}
 	diffs := []core.PrincipalsReportItemDifference{}
-	for _, ri := range latest {
+	for _, ri := range latest.Items {
 		seen[ri.PrincipalARN] = mark
 		if ti, ok := targetByARN[ri.PrincipalARN]; !ok {
 			diffs = append(diffs, ri.AddedDiff())
@@ -155,7 +157,7 @@ func DoDiffPrincipals(stdout, stderr io.Writer, reportHome, customerID, accountI
 			diffs = append(diffs, ri.Diff(ti))
 		}
 	}
-	for _, ri := range target {
+	for _, ri := range target.Items {
 		if _, ok := seen[ri.PrincipalARN]; !ok {
 			diffs = append(diffs, ri.DeletedDiff())
 		}

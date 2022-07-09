@@ -113,7 +113,8 @@ func DoQueryResourceAccessSummary(stdout, stderr io.Writer,
 		os.Exit(1)
 		return
 	}
-	report, err := core.LoadResourceAccessSummaryReport(lf)
+	report := &core.ResourceAccessSummaryReport{}
+	err = core.LoadReport(lf, report)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the requested report: %v\n", err)
 		os.Exit(1)
@@ -121,16 +122,16 @@ func DoQueryResourceAccessSummary(stdout, stderr io.Writer,
 	}
 
 	if verbose {
-		fmt.Fprintf(stderr, "Target Analysis: %v, records: %v\n", analysisDate, len(report))
+		fmt.Fprintf(stderr, "Target Analysis: %v, records: %v\n", analysisDate, len(report.Items))
 	}
 
 	if len(resources) <= 0 {
-		views.Display(stdout, stderr, format, report)
+		views.Display(stdout, stderr, format, report.Items)
 		return
 	}
 
 	results := []core.ResourceAccessSummaryReportItem{}
-	for _, ri := range report {
+	for _, ri := range report.Items {
 		if _, ok := resources[ri.ResourceARN]; ok {
 			results = append(results, ri)
 			continue

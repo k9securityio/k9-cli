@@ -170,12 +170,16 @@ k9 query resources \
 k9 query resource-access \
     --customer_id $K9_CUSTOMER_ID \
     --account $K9_ACCOUNT_ID \
+    --arns $SOME_BUCKET_ARN,$SOME_MACHINE_ARN --arns $ANOTHER_BUCKET_ARN \
+    --names $A_KMS_KEY_NAME
 ```
 
 ```sh
 k9 query principal-access \
     --customer_id $K9_CUSTOMER_ID \
     --account $K9_ACCOUNT_ID \
+    --arns $SOME_ROLE_ARN,$SOME_USER_ARN --arns $ANOTHER_USER_ARN \
+    --names $A_ROLE_NAME
 ```
 
 ### Changes to Principals or Resources Over Time

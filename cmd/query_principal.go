@@ -42,14 +42,19 @@ var queryPrincipalCmd = &cobra.Command{
 		reportHome, _ := cmd.Flags().GetString(FLAG_REPORT_HOME)
 		stdout := cmd.OutOrStdout()
 		stderr := cmd.ErrOrStderr()
-		arns, err := cmd.Flags().GetStringSlice(FLAG_ARNS)
-		names, err := cmd.Flags().GetStringSlice(FLAG_NAMES)
+		arns, _ := cmd.Flags().GetStringSlice(FLAG_ARNS)
+		names, _ := cmd.Flags().GetStringSlice(FLAG_NAMES)
 		principalsFilter := map[string]bool{}
 
-		if err != nil {
-			fmt.Fprintf(stderr, err.Error())
-			os.Exit(1)
-			return
+		var reportDateTime *time.Time
+		if len(analysisDate) > 0 {
+			td, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
+			if err != nil {
+				fmt.Fprintf(stderr, "invalid analysis-date: %v\n", analysisDate)
+				os.Exit(1)
+				return
+			}
+			reportDateTime = &td
 		}
 
 		for _, p := range arns {
@@ -60,7 +65,8 @@ var queryPrincipalCmd = &cobra.Command{
 		}
 
 		DoQueryPrincipal(stdout, stderr,
-			reportHome, customerID, accountID, analysisDate, format,
+			reportHome, customerID, accountID, format,
+			reportDateTime,
 			verbose,
 			principalsFilter)
 
@@ -76,7 +82,8 @@ func init() {
 
 // DoQueryPrincipal is the high-level query and filtering logic for querying principal reports. Externalized for testability.
 func DoQueryPrincipal(stdout, stderr io.Writer,
-	reportHome, customerID, accountID, analysisDate, format string,
+	reportHome, customerID, accountID, format string,
+	analysisDate *time.Time,
 	verbose bool,
 	principals map[string]bool) {
 
@@ -89,41 +96,14 @@ func DoQueryPrincipal(stdout, stderr io.Writer,
 	}
 
 	if verbose {
-		defer DumpDBStats(db)
+		defer DumpDBStats(stderr, &db)
 	}
 
 	// determine the file name for the desired report
-	var path *string
-	var reportDateTime time.Time
-	if len(analysisDate) <= 0 {
-		path = db.GetPathForCustomerAccountLatestKind(customerID, accountID, core.REPORT_TYPE_PREFIX_PRINCIPALS)
-		if path == nil || len(*path) <= 0 {
-			fmt.Fprintf(stderr, "No report found for customer: %v account: %v\n", customerID, accountID)
-			os.Exit(1)
-			return
-		}
-	} else {
-		// parse the time
-		reportDateTime, err = time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
-		if err != nil {
-			fmt.Fprintf(stderr, "Invalid analysis-date: %v\n", analysisDate)
-			os.Exit(1)
-			return
-		}
-		path = db.GetPathForCustomerAccountTimeKind(customerID, accountID, reportDateTime, core.REPORT_TYPE_PREFIX_PRINCIPALS)
-		if path == nil || len(*path) <= 0 {
-			fmt.Fprintf(stderr, "No report found for customer: %v account: %v date:%v\n", customerID, accountID, analysisDate)
-			os.Exit(1)
-			return
-		}
-	}
-
-	if len(*path) <= 0 {
-		fmt.Fprintf(stderr,
-			"No such report: %v %v, total records: %v\n",
-			customerID, accountID, db.Size())
+	path := db.GetPathForCustomerAccountTimeKind(customerID, accountID, analysisDate, core.REPORT_TYPE_PREFIX_PRINCIPALS)
+	if path == nil || len(*path) <= 0 {
+		fmt.Fprintf(stderr, "No report found for customer: %v account: %v date: %v\n", customerID, accountID, analysisDate)
 		os.Exit(1)
-		return
 	}
 
 	// get the report
@@ -141,7 +121,7 @@ func DoQueryPrincipal(stdout, stderr io.Writer,
 	}
 
 	if verbose {
-		fmt.Fprintf(stderr, "Target Analysis: %v, records: %v\n", reportDateTime, len(report))
+		fmt.Fprintf(stderr, "Target Analysis: %v, records: %v\n", analysisDate, len(report))
 	}
 
 	if len(principals) <= 0 {

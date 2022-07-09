@@ -18,7 +18,6 @@ limitations under the License.
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -44,13 +43,21 @@ var queryRisksPrivilegeEscalationCmd = &cobra.Command{
 		stdout := cmd.OutOrStdout()
 		stderr := cmd.ErrOrStderr()
 
+		var reportDateTime time.Time
+		if len(analysisDate) > 0 {
+			reportDateTime, err = time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
+			if err != nil {
+				err = fmt.Errorf("invalid analysis-date: %v\n", analysisDate)
+			}
+		}
+
 		if err != nil {
 			fmt.Fprintf(stderr, err.Error())
 			os.Exit(1)
 			return
 		}
 
-		DoQueryRisksPrivilegeEscalation(stdout, stderr, reportHome, customerID, accountID, analysisDate, format, verbose)
+		DoQueryRisksPrivilegeEscalation(stdout, stderr, reportHome, customerID, accountID, format, &reportDateTime, verbose)
 	},
 }
 
@@ -58,7 +65,8 @@ func init() {
 	queryRisksCmd.AddCommand(queryRisksPrivilegeEscalationCmd)
 }
 
-func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, customerID, accountID, analysisDate, format string, verbose bool) {
+// DoQueryRisksPrivilegeEscalation
+func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, customerID, accountID, format string, analysisDate *time.Time, verbose bool) {
 	// load the local report database
 	db, err := core.LoadLocalDB(reportHome)
 	if err != nil {
@@ -67,47 +75,18 @@ func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, custo
 		return
 	}
 	if verbose {
-		defer DumpDBStats(db)
+		defer DumpDBStats(stderr, &db)
 	}
 
 	// determine the file name for the desired report
-	var path string
-	if len(analysisDate) > 0 {
-		reportDateTime, err := time.Parse(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT, analysisDate)
-		if err != nil {
-			fmt.Fprintf(stderr, "Invalid analysis-date: %v\n", analysisDate)
-			os.Exit(1)
-			return
-		}
-		if qr := db.GetPathForCustomerAccountTimeKind(
-			customerID, accountID, reportDateTime,
-			core.REPORT_TYPE_PREFIX_PRINCIPALS); qr != nil {
-			path = *qr
-		} else {
-			fmt.Fprintf(stderr,
-				"No such report: %v, %v, %v, total records: %v\n",
-				customerID, accountID,
-				reportDateTime.Format(core.FILENAME_TIMESTAMP_ANALYSIS_DATE_LAYOUT),
-				db.Size())
-			os.Exit(1)
-			return
-		}
-	} else {
-		// latest
-		fmt.Fprintln(stderr, `running latest report`)
-		if qr := db.GetPathForCustomerAccountLatestKind(
-			customerID, accountID, core.REPORT_TYPE_PREFIX_PRINCIPALS); qr != nil {
-			path = *qr
-		} else {
-			fmt.Fprintf(stderr,
-				"No such report: %v, %v, total records: %v\n",
-				customerID, accountID, db.Size())
-			os.Exit(1)
-			return
-		}
+	path := db.GetPathForCustomerAccountTimeKind(customerID, accountID, analysisDate, core.REPORT_TYPE_PREFIX_PRINCIPALS)
+	if path == nil || len(*path) <= 0 {
+		fmt.Fprintf(stderr, "No report found for customer: %v account: %v date: %v\n", customerID, accountID, analysisDate)
+		os.Exit(1)
+		return
 	}
 
-	f, err := os.Open(path)
+	f, err := os.Open(*path)
 	if err != nil {
 		fmt.Fprintf(stderr, "Unable to open the specified report: %v\n", err)
 		os.Exit(1)
@@ -129,20 +108,5 @@ func DoQueryRisksPrivilegeEscalation(stdout, stderr io.Writer, reportHome, custo
 			output = append(output, r)
 		}
 	}
-
-	// transform for output
-	switch format {
-	case `pdf`:
-	case `csv`:
-		views.WriteCSVTo(stdout, stderr, output)
-	case `tap`:
-	case `json`:
-		b, err := json.Marshal(output)
-		if err != nil {
-			fmt.Fprintln(stderr, `unable to marshal report to json`)
-		}
-		fmt.Fprintln(stdout, string(b))
-	default:
-		fmt.Fprintln(stderr, `invalid output type`)
-	}
+	views.Display(stdout, stderr, format, output)
 }

@@ -28,7 +28,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// queryPrincipalAccessCmd represents the principal command
+// queryPrincipalAccessCmd represents the principal-access command
 var queryPrincipalAccessCmd = &cobra.Command{
 	Use:     "principal-access",
 	Aliases: []string{"principals-access", `pas`, `principal-summary`},
@@ -73,6 +73,7 @@ func init() {
 	queryPrincipalAccessCmd.Flags().StringSlice(FLAG_NAMES, []string{}, `A list of principal names to retrieve`)
 }
 
+// DoQueryPrincipalAccessSummary is the high-level query and filtering logic for querying principal-access reports. Externalized for testability.
 func DoQueryPrincipalAccessSummary(stdout, stderr io.Writer,
 	reportHome, customerID, accountID, analysisDate, format string,
 	verbose bool,

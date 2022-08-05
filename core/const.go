@@ -25,3 +25,11 @@ const (
 	DB_INDEX_POSITION_MONTH      = 6
 	DB_INDEX_POSITION_FILE       = 7
 )
+
+const (
+	ACCESS_CAPABILITY_RESOURCE_ADMIN = `administer-resource`
+	ACCESS_CAPABILITY_DELETE_DATA    = `delete-data`
+	ACCESS_CAPABILITY_READ_CONFIG    = `read-config`
+	ACCESS_CAPABILITY_READ_DATA      = `read-data`
+	ACCESS_CAPABILITY_WRITE_DATA     = `write-data`
+)

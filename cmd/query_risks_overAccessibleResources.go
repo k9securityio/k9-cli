@@ -162,7 +162,7 @@ type ResourceAccessSummary struct {
 	ResourceName string `csv:"resource_name" json:"resource_name"`
 	ResourceARN  string `csv:"resource_arn" json:"resource_arn"`
 
-	PrincipalsByCapability map[string][]Principal `json:"principals_by_capability"`
+	PrincipalsByCapability map[string][]Principal `csv:"principals_by_capability" json:"principals_by_capability"`
 }
 
 func BuildResourceAccessSummaries(stderr io.Writer,

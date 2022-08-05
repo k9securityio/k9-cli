@@ -161,7 +161,7 @@ type PrincipalAccessSummary struct {
 	Name string `csv:"principal_name" json:"principal_name"`
 	Type string `csv:"principal_type" json:"principal_type"`
 
-	ResourceAccessByCapability map[string][]Resource `json:"resources_by_capability"`
+	ResourceAccessByCapability map[string][]Resource `csv:"resources_by_capability" json:"resources_by_capability"`
 }
 
 func BuildPrincipalAccessSummaries(stderr io.Writer, reportItems []core.PrincipalAccessSummaryReportItem, services map[string]bool, verbose bool) []PrincipalAccessSummary {

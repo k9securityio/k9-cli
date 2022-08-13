@@ -45,11 +45,16 @@ var queryRisksOverAccessibleResourcesCmd = &cobra.Command{
 		services, _ := cmd.Flags().GetStringSlice(FLAG_SERVICE)
 
 		maxAdmins, _ := cmd.Flags().GetInt(FLAG_MAX_ADMIN)
-		maxRWD, _ := cmd.Flags().GetInt(FLAG_MAX_RWD)
+		maxRead, _ := cmd.Flags().GetInt(FLAG_MAX_READ)
+		maxWrite, _ := cmd.Flags().GetInt(FLAG_MAX_WRITE)
+		maxDelete, _ := cmd.Flags().GetInt(FLAG_MAX_DELETE)
 
 		policy := AccessibilityPolicy{
-			MaxAdmins:          maxAdmins,
-			MaxReadWriteDelete: maxRWD}
+			AdminCap:  maxAdmins,
+			ReadCap:   maxRead,
+			WriteCap:  maxWrite,
+			DeleteCap: maxDelete,
+		}
 
 		var reportDateTime *time.Time
 		if len(analysisDate) > 0 {
@@ -81,8 +86,10 @@ func init() {
 	queryRisksOverAccessibleResourcesCmd.Flags().StringSlice(FLAG_SERVICE, []string{}, "A list of service names to evaluate")
 	queryRisksOverAccessibleResourcesCmd.MarkFlagRequired(FLAG_SERVICE)
 
-	queryRisksOverAccessibleResourcesCmd.Flags().Int(FLAG_MAX_ADMIN, 5, "The maximum number of principals with administrative access to a resource.")
-	queryRisksOverAccessibleResourcesCmd.Flags().Int(FLAG_MAX_RWD, 5, "The maximum number of principals with read + write + delete to a resource.")
+	queryRisksOverAccessibleResourcesCmd.Flags().Int(FLAG_MAX_ADMIN, 5, "The maximum number of principals with ADMIN access to a resource.")
+	queryRisksOverAccessibleResourcesCmd.Flags().Int(FLAG_MAX_READ, 5, "The maximum number of principals with READ to a resource.")
+	queryRisksOverAccessibleResourcesCmd.Flags().Int(FLAG_MAX_WRITE, 5, "The maximum number of principals with WRITE to a resource.")
+	queryRisksOverAccessibleResourcesCmd.Flags().Int(FLAG_MAX_DELETE, 5, "The maximum number of principals with DELETE to a resource.")
 }
 
 func DoQueryOverAccessibleResources(stdout, stderr io.Writer,
@@ -139,15 +146,25 @@ func DoQueryOverAccessibleResources(stdout, stderr io.Writer,
 }
 
 type AccessibilityPolicy struct {
-	MaxAdmins          int
-	MaxReadWriteDelete int
+	AdminCap  int
+	ReadCap   int
+	WriteCap  int
+	DeleteCap int
 }
 
 func (p AccessibilityPolicy) IsCompliant(s ResourceAccessSummary) bool {
-	if len(s.PrincipalsByCapability[core.ACCESS_CAPABILITY_RESOURCE_ADMIN]) > p.MaxAdmins {
+	if len(s.PrincipalsByCapability[core.ACCESS_CAPABILITY_RESOURCE_ADMIN]) > p.AdminCap {
 		return false
 	}
-	// TODO implement maxRWD
+	if len(s.PrincipalsByCapability[core.ACCESS_CAPABILITY_READ_DATA]) > p.ReadCap {
+		return false
+	}
+	if len(s.PrincipalsByCapability[core.ACCESS_CAPABILITY_WRITE_DATA]) > p.WriteCap {
+		return false
+	}
+	if len(s.PrincipalsByCapability[core.ACCESS_CAPABILITY_DELETE_DATA]) > p.DeleteCap {
+		return false
+	}
 	return true
 }
 

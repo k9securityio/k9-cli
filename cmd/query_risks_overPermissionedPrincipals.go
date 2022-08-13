@@ -44,11 +44,16 @@ var queryRisksOverPermissionedPrincipalsCmd = &cobra.Command{
 		services, _ := cmd.Flags().GetStringSlice(FLAG_SERVICE)
 
 		maxAdmins, _ := cmd.Flags().GetInt(FLAG_MAX_ADMIN)
-		maxRWD, _ := cmd.Flags().GetInt(FLAG_MAX_RWD)
+		maxRead, _ := cmd.Flags().GetInt(FLAG_MAX_READ)
+		maxWrite, _ := cmd.Flags().GetInt(FLAG_MAX_WRITE)
+		maxDelete, _ := cmd.Flags().GetInt(FLAG_MAX_DELETE)
 
 		policy := CapabilityLimitPolicy{
-			AdminCap:           maxAdmins,
-			ReadWriteDeleteCap: maxRWD}
+			AdminCap:  maxAdmins,
+			ReadCap:   maxRead,
+			WriteCap:  maxWrite,
+			DeleteCap: maxDelete,
+		}
 
 		var reportDateTime *time.Time
 		if len(analysisDate) > 0 {
@@ -82,7 +87,10 @@ func init() {
 	queryRisksOverPermissionedPrincipalsCmd.MarkFlagRequired(FLAG_SERVICE)
 
 	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_ADMIN, 5, "The maximum number of resources to which a principal may have administrative access.")
-	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_RWD, 5, "The maximum number of resources to which a principal may have read + write + delete access.")
+
+	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_READ, 5, "The maximum number of resources to which a principal may have READ access.")
+	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_WRITE, 5, "The maximum number of resources to which a principal may have WRITE access.")
+	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_DELETE, 5, "The maximum number of resources to which a principal may have DELETE access.")
 }
 
 func DoQueryOverPermissionedPrincipals(stdout, stderr io.Writer,
@@ -140,12 +148,23 @@ func DoQueryOverPermissionedPrincipals(stdout, stderr io.Writer,
 }
 
 type CapabilityLimitPolicy struct {
-	AdminCap           int
-	ReadWriteDeleteCap int
+	AdminCap  int
+	ReadCap   int
+	WriteCap  int
+	DeleteCap int
 }
 
 func (p CapabilityLimitPolicy) IsCompliant(s PrincipalAccessSummary) bool {
 	if len(s.ResourceAccessByCapability[core.ACCESS_CAPABILITY_RESOURCE_ADMIN]) > p.AdminCap {
+		return false
+	}
+	if len(s.ResourceAccessByCapability[core.ACCESS_CAPABILITY_READ_DATA]) > p.ReadCap {
+		return false
+	}
+	if len(s.ResourceAccessByCapability[core.ACCESS_CAPABILITY_WRITE_DATA]) > p.WriteCap {
+		return false
+	}
+	if len(s.ResourceAccessByCapability[core.ACCESS_CAPABILITY_DELETE_DATA]) > p.DeleteCap {
 		return false
 	}
 	return true

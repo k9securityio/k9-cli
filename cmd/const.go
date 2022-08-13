@@ -29,5 +29,7 @@ const (
 
 	FLAG_MAX_ADMIN  = `max-admin`
 	FLAG_MAX_ADMINS = `max-admins`
-	FLAG_MAX_RWD    = `max-rwd`
+	FLAG_MAX_READ   = `max-read`
+	FLAG_MAX_WRITE  = `max-write`
+	FLAG_MAX_DELETE = `max-delete`
 )

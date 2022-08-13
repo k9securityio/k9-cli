@@ -86,7 +86,7 @@ func init() {
 	queryRisksOverPermissionedPrincipalsCmd.Flags().StringSlice(FLAG_SERVICE, []string{}, "A list of service names to evaluate")
 	queryRisksOverPermissionedPrincipalsCmd.MarkFlagRequired(FLAG_SERVICE)
 
-	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_ADMIN, 5, "The maximum number of resources to which a principal may have administrative access.")
+	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_ADMIN, 5, "The maximum number of resources to which a principal may have ADMIN access.")
 
 	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_READ, 5, "The maximum number of resources to which a principal may have READ access.")
 	queryRisksOverPermissionedPrincipalsCmd.Flags().Int(FLAG_MAX_WRITE, 5, "The maximum number of resources to which a principal may have WRITE access.")

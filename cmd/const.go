@@ -23,4 +23,13 @@ const (
 
 	FLAG_NAME  = `name`
 	FLAG_NAMES = `names`
+
+	FLAG_SERVICE  = `service`
+	FLAG_SERVICES = `services`
+
+	FLAG_MAX_ADMIN  = `max-admin`
+	FLAG_MAX_ADMINS = `max-admins`
+	FLAG_MAX_READ   = `max-read`
+	FLAG_MAX_WRITE  = `max-write`
+	FLAG_MAX_DELETE = `max-delete`
 )

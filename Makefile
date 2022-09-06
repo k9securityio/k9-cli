@@ -49,5 +49,5 @@ push:
 
 .PHONY: dist
 dist:
-	# debug with -log-level=info -log-json
-	gon .gon.hcl
+	# debug with -log-level=debug -log-json
+	gon -log-level=debug -log-json .gon.hcl

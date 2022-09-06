@@ -5,13 +5,18 @@ The CLI synchronizes reports locally and then helps you answer common questions 
                                                 
 * who can administer IAM?
 * what principal or resource access has changed?
+* who can administer AWS IAM?
+* which resources are overly accessible? e.g. S3 buckets, KMS keys
+* which principals have too much access to particular service resources? e.g. S3 or DynamoDB
 
-This is a 'preview' release intended for early adopters.  Only the commands documented in the **Usage** section have been implemented.  The other commands are stubs that show where the CLI is going. 
+This is a 'preview' release intended for early adopters.  Only the commands documented in the **Usage** section have been implemented.  The other commands are stubs that show where the CLI is going.
+
+Check out the [demo.sh](scripts/demo.sh) script to see how to automate IAM analysis with the k9 CLI.
 
 ## Get Started
 Download one of the released binaries, rename the file to k9 or k9.exe and place it in your execution path. By default, the k9 CLI will expect the report database to be homed in your current working directory.
 
-Everything is working if you can run the following command and it reports version such as `v0.0.2`.
+Everything is working if you can run the following command and it reports version such as `v0.3.0`.
 
 ```sh
 k9 version
@@ -165,7 +170,9 @@ k9 query resources \
 ```
 
 ### Answer Questions about Resource and Principal Access
+You can also determine who has access to specific resource(s) or what a principal(s) can access.
 
+First, find who has access to particular resources by filtering the `resource-access` summary to specific ARNs or names:
 ```sh
 k9 query resource-access \
     --customer_id $K9_CUSTOMER_ID \
@@ -174,12 +181,63 @@ k9 query resource-access \
     --names $A_KMS_KEY_NAME
 ```
 
+Second, see what principals can access by filtering the `principal-access` summary to specific ARNs and/or names:
 ```sh
 k9 query principal-access \
     --customer_id $K9_CUSTOMER_ID \
     --account $K9_ACCOUNT_ID \
     --arns $SOME_ROLE_ARN,$SOME_USER_ARN --arns $ANOTHER_USER_ARN \
     --names $A_ROLE_NAME
+```
+
+You can also quickly determine if you allow too much access to a particular service's resources.  
+
+Suppose you want to find excess permissions to your S3 resources.
+
+Which S3 buckets are too accessible? Find the S3 buckets where more than 3 principals can read data with:
+
+```sh
+k9 query risks over-accessible-resources \
+    --customer_id $K9_CUSTOMER_ID \
+    --account $K9_ACCOUNT_ID \
+    --analysis-date $ANALYSIS_DATE \
+    --format json \
+    --service S3 \
+    --max-read 3 \
+      | jq '.[].resource_arn'
+```
+
+which will produce a list of S3 buckets where more than 3 principals can read the data:
+```
+"arn:aws:s3:::k9-cdk-public-website-test"
+"arn:aws:s3:::aws-cloudtrail-logs-139710491120-test2"
+"arn:aws:s3:::k9-temp-audit-resources-dev-9c3a9e12"
+"arn:aws:s3:::k9-testenv-testbucket-custom-policy-8511ead4"
+"arn:aws:s3:::trusted-network-example"
+```
+
+Which principals have too much access to S3?  Find the principals who can administer more than 5 S3 buckets with:
+
+```shell
+echo "Query Risks: Over-permissioned principals"
+k9 query risks over-permissioned-principals \
+    --customer_id $K9_CUSTOMER_ID \
+    --account $K9_ACCOUNT_ID \
+    --analysis-date $ANALYSIS_DATE \
+    --format json \
+    --service S3 \
+    --max-admin 5 \
+      | jq '.[].principal_arn'
+```
+
+which will produce a list of principals with ability to administer more than 5 buckets:
+
+```
+"arn:aws:iam::139710491120:user/skuenzli"
+"arn:aws:iam::139710491120:role/aws-service-role/support.amazonaws.com/AWSServiceRoleForSupport"
+"arn:aws:iam::139710491120:user/ci"
+"arn:aws:iam::139710491120:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AdministratorAccess_437be9d757c9ea2f"
+"arn:aws:iam::139710491120:role/cdk-hnb659fds-cfn-exec-role-139710491120-us-east-1"
 ```
 
 ### Changes to Principals or Resources Over Time

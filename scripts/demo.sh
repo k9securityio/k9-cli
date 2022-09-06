@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-export ANALYSIS_DATE='2022-09-01'
+K9_SECURE_S3_INBOX=qm-dev-k9-reports
+K9_CUSTOMER_ID=C10001
+K9_ACCOUNT_ID=139710491120
+ANALYSIS_DATE='2022-09-01'
 
-export K9_SECURE_S3_INBOX=qm-dev-k9-reports
 echo "list customers in ${K9_SECURE_S3_INBOX}"
 k9 list \
     --bucket $K9_SECURE_S3_INBOX 
 
-export K9_CUSTOMER_ID=C10001
 echo "list accounts for customer: ${K9_CUSTOMER_ID}"
 k9 list \
     --bucket $K9_SECURE_S3_INBOX \
     --customer_id $K9_CUSTOMER_ID
 
-export K9_ACCOUNT_ID=139710491120
 echo "list reports for ${K9_CUSTOMER_ID} account ${K9_ACCOUNT_ID}"
 k9 list \
     --bucket $K9_SECURE_S3_INBOX \
@@ -83,7 +83,7 @@ k9 query resource-access \
     --format json \
       | jq '.'
 
-echo "Query for over-permissioned principals"
+echo "Query Risks: Over-permissioned principals"
 k9 query risks over-permissioned-principals \
     --customer_id $K9_CUSTOMER_ID \
     --account $K9_ACCOUNT_ID \
@@ -93,7 +93,7 @@ k9 query risks over-permissioned-principals \
     --max-admin 5 \
       | jq '.[].principal_arn'
 
-echo "Query for over-accessible resources"
+echo "Query Risks: Over-accessible resources"
 k9 query risks over-accessible-resources \
     --customer_id $K9_CUSTOMER_ID \
     --account $K9_ACCOUNT_ID \

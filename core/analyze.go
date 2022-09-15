@@ -136,10 +136,10 @@ func createPayloadHash(req *http.Request) (string, error) {
 	}
 	var buf bytes.Buffer
 	_, err = buf.ReadFrom(body)
-
 	if err != nil {
 		return "", err
 	}
+	
 	b := sha256.Sum256(buf.Bytes())
 	return hex.EncodeToString(b[:]), nil
 }

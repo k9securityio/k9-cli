@@ -18,7 +18,11 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/k9securityio/k9-cli/core"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -28,6 +32,13 @@ var analyzeAccountCmd = &cobra.Command{
 	Use:   "account",
 	Short: `Analyze the specified account`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		cfg, err := config.LoadDefaultConfig(context.TODO())
+		if err != nil {
+			fmt.Fprintf(cmd.ErrOrStderr(), "Error retrieving AWS configuration: %v+\n", err)
+			os.Exit(1)
+		}
+
 		stdout := cmd.OutOrStdout()
 
 		customerID, _ := cmd.Flags().GetString(FLAG_CUSTOMER_ID)
@@ -37,7 +48,8 @@ var analyzeAccountCmd = &cobra.Command{
 			apiHost = "api.k9security.io"
 		}
 
-		fmt.Fprintf(stdout, "will analyze %v account %v using %v\n", customerID, accountID, apiHost)
+		fmt.Fprintf(stdout, "Starting analysis of %v account %v using %v\n", customerID, accountID, apiHost)
+		core.AnalyzeAccount(os.Stdout, cfg, apiHost, customerID, accountID)
 	},
 }
 

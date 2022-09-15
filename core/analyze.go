@@ -63,8 +63,7 @@ func AnalyzeAccount(o io.Writer, cfg aws.Config, apiHost, customerID, account st
 	request.Header.Set("Date", now.Format(time.RFC3339))
 	request.Header.Set("Content-Type", "application/json")
 
-	err = signApiRequest(cfg, request, now)
-	if err != nil {
+	if err != signApiRequest(cfg, request, now) {
 		fmt.Fprintf(os.Stderr, "Could not sign API request: %s\n", err)
 		return err
 	}
@@ -82,8 +81,7 @@ func AnalyzeAccount(o io.Writer, cfg aws.Config, apiHost, customerID, account st
 	responseBodyStr := string(body)
 	if response.StatusCode == http.StatusOK || response.StatusCode == http.StatusAccepted {
 		analyzeResponse := analyzeResponseBody{}
-		err = json.Unmarshal(body, &analyzeResponse)
-		if err != nil {
+		if err != json.Unmarshal(body, &analyzeResponse) {
 			fmt.Fprintf(os.Stderr, "Could not deserialize API response: %s\n", responseBodyStr)
 			return err
 		}
@@ -93,7 +91,6 @@ func AnalyzeAccount(o io.Writer, cfg aws.Config, apiHost, customerID, account st
 			account,
 			analyzeResponse.ExecutionID)
 	} else {
-		//fmt.Println("response Headers:", response.Header)
 		fmt.Fprintf(os.Stderr,"Analyze API Response Status: %s\n", response.Status)
 		fmt.Fprintf(os.Stderr, "Could not start analysis for %s account %s.  API Response: %s\n",
 			customerID,
@@ -122,9 +119,7 @@ func signApiRequest(cfg aws.Config, request *http.Request, signingTime time.Time
 	}
 
 	signer := v4.NewSigner()
-	err = signer.SignHTTP(ctx, credentials, request, hash, "execute-api", cfg.Region, signingTime)
-
-	if err != nil {
+	if err != signer.SignHTTP(ctx, credentials, request, hash, "execute-api", cfg.Region, signingTime) {
 		return err
 	}
 

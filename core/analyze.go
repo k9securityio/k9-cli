@@ -68,8 +68,7 @@ func AnalyzeAccount(o io.Writer, cfg aws.Config, apiHost, customerID, account st
 		return err
 	}
 
-	client := &http.Client{}
-	response, err := client.Do(request)
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not execute API request: %s\n", err)
 		return err

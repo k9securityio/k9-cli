@@ -49,7 +49,11 @@ var analyzeAccountCmd = &cobra.Command{
 		}
 
 		fmt.Fprintf(stdout, "Starting analysis of %v account %v using %v\n", customerID, accountID, apiHost)
-		core.AnalyzeAccount(os.Stdout, cfg, apiHost, customerID, accountID)
+		err = core.AnalyzeAccount(os.Stdout, cfg, apiHost, customerID, accountID)
+		if err != nil {
+			fmt.Fprintf(cmd.ErrOrStderr(), "Error triggering analysis for %v account %v: %v+\n", customerID, accountID, err)
+			os.Exit(1)
+		}
 	},
 }
 

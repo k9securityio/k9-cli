@@ -68,6 +68,5 @@ func init() {
 	viper.BindPFlag(`customer_id`, analyzeAccountCmd.Flags().Lookup(`customer_id`))
 
 	analyzeAccountCmd.Flags().String(`api`, ``, `K9 API to use for analysis`)
-	//analyzeAccountCmd.MarkFlagRequired(`customer_id`)
 	viper.BindPFlag(`api`, analyzeAccountCmd.Flags().Lookup(`api`))
 }

@@ -55,13 +55,18 @@ func AnalyzeAccount(o io.Writer, cfg aws.Config, apiHost, customerID, account st
 	requestBodyBytes, _ := json.Marshal(requestBody)
 
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBodyBytes))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not build API request: %s\n", err)
+		return err
+	}
 	now := time.Now()
 	request.Header.Set("Date", now.Format(time.RFC3339))
 	request.Header.Set("Content-Type", "application/json")
 
 	err = signApiRequest(cfg, request, now)
 	if err != nil {
-		// Handle error.
+		fmt.Fprintf(os.Stderr, "Could not sign API request: %s\n", err)
+		return err
 	}
 
 	client := &http.Client{}

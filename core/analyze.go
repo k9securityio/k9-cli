@@ -28,6 +28,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -40,13 +41,17 @@ type analyzeRequestBody struct {
 // Example:
 // {"customerId": "C10000", "accountId": "139710491120", "executionId": "ondemand-C10000-139710491120-2022-09-15_TV49"}
 type analyzeResponseBody struct {
-	CustomerID string `json:"customerId"`
-	Account    string `json:"accountId"`
+	CustomerID  string `json:"customerId"`
+	Account     string `json:"accountId"`
 	ExecutionID string `json:"executionId"`
 }
 
 func AnalyzeAccount(o io.Writer, cfg aws.Config, apiHost, customerID, account string) error {
-	url := fmt.Sprintf("https://%s/analysis/account", apiHost)
+	analysisUrl := &url.URL{
+		Scheme: "https",
+		Host:   apiHost,
+		Path:   fmt.Sprintf("/customer/%s/account/%s/analysis", customerID, account),
+	}
 
 	requestBody := analyzeRequestBody{
 		CustomerID: customerID,
@@ -54,7 +59,7 @@ func AnalyzeAccount(o io.Writer, cfg aws.Config, apiHost, customerID, account st
 	}
 	requestBodyBytes, _ := json.Marshal(requestBody)
 
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBodyBytes))
+	request, err := http.NewRequest("POST", analysisUrl.String(), bytes.NewBuffer(requestBodyBytes))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not build API request: %s\n", err)
 		return err
@@ -90,7 +95,7 @@ func AnalyzeAccount(o io.Writer, cfg aws.Config, apiHost, customerID, account st
 			account,
 			analyzeResponse.ExecutionID)
 	} else {
-		fmt.Fprintf(os.Stderr,"Analyze API Response Status: %s\n", response.Status)
+		fmt.Fprintf(os.Stderr, "Analyze API Response Status: %s\n", response.Status)
 		fmt.Fprintf(os.Stderr, "Could not start analysis for %s account %s.  API Response: %s\n",
 			customerID,
 			account,
@@ -138,7 +143,7 @@ func createPayloadHash(req *http.Request) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	b := sha256.Sum256(buf.Bytes())
 	return hex.EncodeToString(b[:]), nil
 }

@@ -51,3 +51,6 @@ push:
 dist:
 	# debug with -log-level=debug -log-json
 	gon -log-level=debug -log-json .gon.hcl
+
+.PHONY: release
+release: clean test build dist

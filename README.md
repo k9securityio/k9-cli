@@ -279,3 +279,25 @@ added,arn:aws:iam::123456789012:role/cdk-hnb659fds-file-publishing-role-12345678
 added,arn:aws:iam::123456789012:role/cdk-hnb659fds-image-publishing-role-123456789012-us-east-1,,,,,,,,,,cdk-hnb659fds-image-publishing-role-123456789012-us-east-1,IAMRole,,,,,,,{}
 added,arn:aws:iam::123456789012:role/cdk-hnb659fds-lookup-role-123456789012-us-east-1,,,,,,,,,,cdk-hnb659fds-lookup-role-123456789012-us-east-1,IAMRole,,,,,,,{}
 ```
+
+### Analyze Account
+You can trigger analysis of a monitored AWS account on-demand with the k9 CLI's `analyze account` command.
+This command will help you verify the effects of policy changes quickly.
+
+The `analyze account` command is authorized by your own AWS identity and the principals you have configured to allow 
+use of the k9 Security APIs. So first configure valid AWS credentials for a principal authorized to use the API.
+
+Then, trigger an analysis by specifying the customer and account ids:
+
+```
+k9 analyze account --customer_id $K9_CUSTOMER_ID --account $K9_ACCOUNT_ID
+```
+
+When successful, the command-line should respond with output like:
+
+```
+Starting analysis of C123456 account 123456789012 using api.k9security.io
+Started analysis for C123456 account 123456789012 with execution ID: ondemand-C123456-123456789012-2022-09-28_B4QX
+```
+
+The `execution ID` uniquely identifies this analysis' execution.
